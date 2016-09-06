@@ -25,7 +25,13 @@ def new_argument_parser():
             '-o',
             dest='clustername',
             default="auto",
-            help="Outputfile name (auto)",
+            help="Outputfile name [auto]",
+            )
+    parser.add_argument(
+            '-type',
+            dest='file type',
+            default="amuse",
+            help="Output file type ([amuse]/ascii/starlab/nemo)",
             )
     parser.add_argument(
             '-N', 
@@ -44,19 +50,19 @@ def new_argument_parser():
             '-dist',
             dest='star_distribution',
             default="plummer",
-            help="Star distribution (plummer/king/fractal)",
+            help="Star distribution ([plummer]/king/fractal)",
             )
     parser.add_argument(
             '-gasdist',
             dest='gas_distribution',
             default="none",
-            help="Gas distribution (none/plummer/king/fractal)",
+            help="Gas distribution ([none]/plummer/king/fractal) NOT IMPLEMENTED YET",
             )
     parser.add_argument(
             '-imf',
             dest='initial_mass_function',
             default="kroupa",
-            help="IMF (kroupa/salpeter/fixed)",
+            help="IMF ([kroupa]/salpeter/fixed)",
             )
     parser.add_argument(
             '-modelnr',
@@ -69,22 +75,22 @@ def new_argument_parser():
             '-kingw',
             dest='king_parameter_w0',
             type=float,
-            default=7.,
-            help='King W0 parameter',
+            default=7.0,
+            help='King W0 parameter [7.0]',
             )
     parser.add_argument(
             '-fractald',
             dest='fractal_parameter_fd',
             type=float,
             default=2.0,
-            help='Fractal distribution',
+            help='Fractal distribution [2.0]',
             )
     parser.add_argument(
             '-uml',
             dest='upper_mass_limit',
             type=float,
             default=125.,
-            help='Upper mass limit (in MSun)',
+            help='Upper mass limit (in MSun) [125.]',
             )
     parser.add_argument(
             '-Z',
@@ -98,13 +104,13 @@ def new_argument_parser():
             dest='initial_binary_fraction',
             type=float,
             default=0.,
-            help='Initial binary fraction [0-1] (not working yet)',
+            help='Initial binary fraction (0-1) [0.] NOT IMPLEMENTED YET',
             )
     parser.add_argument(
             '-R',
             dest='effective_radius',
             type=float,
-            default=3.,
+            default=3.0,
             help='Cluster radius [3.0] (parsec)',
             )
     parser.add_argument(
@@ -141,6 +147,7 @@ if __name__ in ["__main__"]:
     effective_radius        = args.effective_radius | units.parsec
     metallicity             = args.metallicity
     virial_ratio            = args.virial_ratio
+    filetype                = args.filetype
 
     ## not quite working yet
     initial_binary_fraction = args.initial_binary_fraction
@@ -285,4 +292,4 @@ if __name__ in ["__main__"]:
             clustername = clustertemplate%N
             cluster_file_exists = os.path.isfile(clustername)
 
-    write_set_to_file(stars,clustername,'amuse')
+    write_set_to_file(stars,clustername,filetype)
