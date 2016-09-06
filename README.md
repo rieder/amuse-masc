@@ -9,8 +9,9 @@ MASC (Make a star cluster) is an AMUSE-based script to generate a star cluster, 
 
 ## Usage:
     $ python make_a_star_cluster.py -h
-    usage: make_a_star_cluster.py [-h] [-o CLUSTERNAME] [-N NUMBER_OF_STARS]
-                                  [-M CLUSTER_MASS] [-dist STAR_DISTRIBUTION]
+    usage: make_a_star_cluster.py [-h] [-o CLUSTERNAME] [-type FILE TYPE]
+                                  [-N NUMBER_OF_STARS] [-M CLUSTER_MASS]
+                                  [-dist STAR_DISTRIBUTION]
                                   [-gasdist GAS_DISTRIBUTION]
                                   [-imf INITIAL_MASS_FUNCTION]
                                   [-modelnr CLUSTER_MODEL_NUMBER]
@@ -22,27 +23,31 @@ MASC (Make a star cluster) is an AMUSE-based script to generate a star cluster, 
     
     optional arguments:
       -h, --help            show this help message and exit
-      -o CLUSTERNAME        Outputfile name (auto)
+      -o CLUSTERNAME        Outputfile name [auto]
+      -type FILE TYPE       Output file type ([amuse]/ascii/starlab/nemo)
       -N NUMBER_OF_STARS    Number of stars
       -M CLUSTER_MASS       Cluster mass (takes precedence over number of stars)
       -dist STAR_DISTRIBUTION
-                            Star distribution (plummer/king/fractal)
+                            Star distribution ([plummer]/king/fractal)
       -gasdist GAS_DISTRIBUTION
-                            Gas distribution (none/plummer/king/fractal)
+                            Gas distribution ([none]/plummer/king/fractal) NOT
+                            IMPLEMENTED YET
       -imf INITIAL_MASS_FUNCTION
-                            IMF (kroupa/salpeter/fixed)
+                            IMF ([kroupa]/salpeter/fixed)
       -modelnr CLUSTER_MODEL_NUMBER
                             Model number
       -kingw KING_PARAMETER_W0
-                            King W0 parameter
+                            King W0 parameter [7.0]
       -fractald FRACTAL_PARAMETER_FD
-                            Fractal distribution
+                            Fractal distribution [2.0]
       -uml UPPER_MASS_LIMIT
-                            Upper mass limit (in MSun)
+                            Upper mass limit (in MSun) [125.]
       -Z METALLICITY        Metallicity [0.01]
       -ibf INITIAL_BINARY_FRACTION
-                            Initial binary fraction [0-1] (not working yet)
+                            Initial binary fraction (0-1) [0.] NOT IMPLEMENTED YET
       -R EFFECTIVE_RADIUS   Cluster radius [3.0] (parsec)
       -vr VIRIAL_RATIO      Virial ration [0.5], 0.5=stable, 0.75=just expelled
                             gas, 0.1=collapsing
-    
+
+## COPYRIGHT/LICENSE
+See LICENSE
