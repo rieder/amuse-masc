@@ -123,6 +123,95 @@ def new_argument_parser():
     args = parser.parse_args()
     return args
 
+def new_binary(
+        mass1, 
+        mass2, 
+        semi_major_axis,       
+        eccentricity = 0, 
+        ):
+
+    mass_fraction_particle_1 = mass1 / (mass1 + mass2)
+
+    binary = datamodel.Particles(2)
+        
+    binary[0].mass = mass1
+    binary[1].mass = mass2
+
+    mu = constants.G * total_mass
+
+    velocity_perihelion = np.sqrt( 
+            mu / semi_major_axis  * 
+            ( 
+                (1.0 + eccentricity) / 
+                (1.0 - eccentricity)
+                )
+            )
+    radius_perihelion = (
+            semi_major_axis * 
+            (1.0 - eccentricity)
+            )
+    
+    binary[0].position = (
+            (1.0 - mass_fraction_particle_1) * 
+            radius_perihelion * 
+            [1.0,0.0,0.0]
+            )
+    binary[1].position = -(
+            mass_fraction_particle_1 * 
+            radius_perihelion * 
+            [1.0,0.0,0.0]
+            )
+
+    binary[0].velocity = (
+            (1.0 - mass_fraction_particle_1) * 
+            velocity_perihelion * 
+            [0.0,1.0,0.0]
+            )
+    binary[1].velocity = -(
+            mass_fraction_particle_1 * 
+            velocity_perihelion * 
+            [0.0,1.0,0.0]
+            )
+
+    return binary
+    
+
+def create_binaries(
+        center_of_mass_particles,
+        ):
+    singles_in_binaries = datamodel.Particles()
+    for i in range(len(center_of_mass_particles)):
+        binary = center_of_mass_particles[i]
+        particles_in_binary = self.new_binary(
+            binary.binary_mass1,
+            binary.binary_mass2,
+            binary.binary_semi_major_axis,
+            binary.binary_eccentricity,
+        )
+            
+        particles_in_binary.radius = binary.binary_semi_major_axis
+        
+        binary.child1 = particles_in_binary[0]
+        binary.child2 = particles_in_binary[1]
+        binary.mass = binary.binary_mass1 + binary.binary_mass2
+       
+        particles_in_binary.position += binary.position
+        particles_in_binary.velocity += binary.velocity
+        singles_in_binaries.add_particles(particles_in_binary)
+    return center_of_mass_particles, singles_in_binaries
+
+def setup_binaries(self):
+    center_of_mass_particles = new_plummer_sphere(self.N_binaries, self.converter)
+    center_of_mass_particles.binary_semi_major_axis = 30|units.AU # add "Realistic" distribution here
+    center_of_mass_particles.binary_eccentricity    = 0.0           # and here
+    center_of_mass_particles.binary_mass1 = new_salpeter_mass_distribution(self.N_binaries)
+    center_of_mass_particles.binary_mass2 = new_salpeter_mass_distribution(self.N_binaries)
+    center_of_mass_particles.mass = center_of_mass_particles.binary_mass1 + center_of_mass_particles.binary_mass2
+    center_of_mass_particles.radius = self.interaction_radius
+    self.binaries, self.singles_in_binaries = self.create_binaries(
+            center_of_mass_particles,
+            )
+
 if __name__ in ["__main__"]:
     set_printing_strategy(
             "custom", 
