@@ -198,12 +198,22 @@ def create_binaries(
         particles_in_binary.position += binary.position
         particles_in_binary.velocity += binary.velocity
         singles_in_binaries.add_particles(particles_in_binary)
+        ##FIXME Rotate binary around phi, theta axes
+
     return center_of_mass_particles, singles_in_binaries
+
 
 def setup_binaries(self):
     center_of_mass_particles = new_plummer_sphere(self.N_binaries, self.converter)
-    center_of_mass_particles.binary_semi_major_axis = 30|units.AU # add "Realistic" distribution here
-    center_of_mass_particles.binary_eccentricity    = 0.0           # and here
+    ## Generate semi-major axes based on models
+    center_of_mass_particles.binary_semi_major_axis = 30. | units.AU 
+    ## Generate eccentricities based on models
+    center_of_mass_particles.binary_eccentricity = 0.0
+    ## Generate angles at random?
+    center_of_mass_particles.binary_theta = np.random.random()*np.pi
+    center_of_mass_particles.binary_phi   = np.random.random()*np.pi*2
+
+
     center_of_mass_particles.binary_mass1 = new_salpeter_mass_distribution(self.N_binaries)
     center_of_mass_particles.binary_mass2 = new_salpeter_mass_distribution(self.N_binaries)
     center_of_mass_particles.mass = center_of_mass_particles.binary_mass1 + center_of_mass_particles.binary_mass2
@@ -212,6 +222,7 @@ def setup_binaries(self):
             center_of_mass_particles,
             )
 
+    
 if __name__ in ["__main__"]:
     set_printing_strategy(
             "custom", 
