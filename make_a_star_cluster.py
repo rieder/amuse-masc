@@ -149,7 +149,7 @@ if __name__ in ["__main__"]:
     virial_ratio            = args.virial_ratio
     filetype                = args.filetype
 
-    ## not quite working yet
+    ## not implemented yet
     initial_binary_fraction = args.initial_binary_fraction
 
     np.random.seed(cluster_model_number)
