@@ -56,7 +56,13 @@ def new_argument_parser():
             '-gasdist',
             dest='gas_distribution',
             default="none",
-            help="Gas distribution ([none]/plummer/king/fractal) NOT IMPLEMENTED YET",
+            help="Gas distribution ([none]/plummer)",
+            )
+    parser.add_argument(
+            '-gasfrac',
+            dest='gas_fraction',
+            default=1.0,
+            help="Total gas mass as fraction of the total stellar mass [1.0]",
             )
     parser.add_argument(
             '-imf',
@@ -129,12 +135,14 @@ if __name__ in ["__main__"]:
             preferred_units = [units.MSun, units.parsec, units.yr, units.kms], 
             precision       = 5
             )
-    clustertemplate = "TESTCluster_%08i.hdf5"
+    cluster_stars_template  = "TESTCluster_stars_%08i.hdf5"
+    cluster_gas_template    = "TESTCluster_gas_%08i.hdf5"
 
     args = new_argument_parser()
     cluster_model_number    = args.cluster_model_number
     star_distribution       = args.star_distribution
     gas_distribution        = args.gas_distribution
+    gas_fraction            = args.gas_fraction
     king_parameter_w0       = args.king_parameter_w0
     fractal_parameter_fd    = args.fractal_parameter_fd
     initial_mass_function   = args.initial_mass_function
@@ -243,7 +251,6 @@ if __name__ in ["__main__"]:
                 )
     else:
         print "No stellar distribution"
-        exit()
 
     ## set mass of the stars
     stars.mass = mass
@@ -282,14 +289,35 @@ if __name__ in ["__main__"]:
     print stars.mass.sum()
     print len(stars)
 
+    ## Distribute gas
+    if gas_distribution == "plummer":
+        from amuse.ic.plummer import new_plummer_gas_model
+        gas = new_plummer_gas_model(
+                number_of_gas_particles,
+                convert_nbody = converter,
+                )
+    else:
+        gas_distribution = False
+        print "No gas distribution"
+
+    if gas_distribution:
+        gas.mass = gas_fraction/len(gas) * stars.mass.sum()
+
     if args.clustername != "auto":
-        clustername = args.clustername
+        cluster_stars_name = args.clustername
+        # Should figure out how to name a gas file in this case...
+        # Probably add "_gas" before the file extension.
     else:
         cluster_file_exists = True
         N=-1
         while cluster_file_exists:
+            # We never generate just a gas distribution, hence not checking for that.
+            # Should do that, though.
             N+=1
-            clustername = clustertemplate%N
-            cluster_file_exists = os.path.isfile(clustername)
+            cluster_stars_name  = cluster_stars_template%N
+            cluster_gas_name    = cluster_gas_template%N
+            cluster_file_exists = os.path.isfile(cluster_stars_name)
 
-    write_set_to_file(stars,clustername,filetype)
+    write_set_to_file(stars,cluster_stars_name,filetype)
+    if gas_distribution:
+        write_set_to_file(gas,cluster_gas_name,filetype)
