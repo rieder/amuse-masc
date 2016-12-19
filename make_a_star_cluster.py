@@ -6,6 +6,11 @@ which can then be used in N-body simulations or for other purposes.
 
 It requires AMUSE, which can be downloaded from http://amusecode.org or
 https://github.com/amusecode/amuse.
+
+Currently not feature-complete yet, and function/argument names are 
+subject to change.
+
+-- Steven Rieder steven at rieder punt nl
 """
 
 import os,sys
