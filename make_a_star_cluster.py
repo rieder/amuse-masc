@@ -271,12 +271,6 @@ def make_a_star_cluster(
 
     stars.collection_attributes.star_metallicity        = star_metallicity
 
-    #stars.collection_attributes.gas_distribution        = gas_distribution
-
-    #stars.collection_attributes.initial_binary_fraction = initial_binary_fraction
-
-    #stars.collection_attributes.virial_ratio            = virial_ratio
-
     ## Derived/legacy values
     stars.collection_attributes.converter_mass          =\
             converter.to_si( 1 | nbody_system.mass)
