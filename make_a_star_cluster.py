@@ -120,6 +120,13 @@ def new_argument_parser():
             default=0.5,
             help='Virial ration [0.5], 0.5=stable, 0.75=just expelled gas, 0.1=collapsing',
             )
+    parser.add_argument(
+            '-filetype',
+            dest='filetype',
+            type=str,
+            default='amuse',
+            help='output file type (all Amuse output types are supported)'
+            )
     args = parser.parse_args()
     return args
 
