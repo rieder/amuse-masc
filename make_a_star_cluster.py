@@ -29,15 +29,16 @@ def new_argument_parser():
             )
     parser.add_argument(
             '-type',
-            dest='file type',
+            dest='filetype',
             default="amuse",
             help="Output file type ([amuse]/ascii/starlab/nemo)",
             )
     parser.add_argument(
             '-N', 
-            dest='number_of_stars', 
+            dest='number_of_stars',
+            default = 1024,
             type=int, 
-            help='Number of stars',
+            help='Number of stars [1024]',
             )
     parser.add_argument(
             '-M', 
@@ -120,15 +121,166 @@ def new_argument_parser():
             default=0.5,
             help='Virial ration [0.5], 0.5=stable, 0.75=just expelled gas, 0.1=collapsing',
             )
-    parser.add_argument(
-            '-filetype',
-            dest='filetype',
-            type=str,
-            default='amuse',
-            help='output file type (all Amuse output types are supported)'
-            )
     args = parser.parse_args()
     return args
+
+
+def make_a_star_cluster(
+        stellar_mass            = False,
+        initial_mass_function   = "salpeter",
+        upper_mass_limit        = 125. | units.MSun,
+        number_of_stars         = 1024,
+        effective_radius        = 3.0 | units.parsec,
+        star_distribution       = "plummer",
+        star_distribution_w0    = 7.0,
+        star_distribution_fd    = 2.0,
+        star_metallicity        = 0.01,
+        **args
+        ):
+    """
+    Create stars.
+    When using an IMF, either the stellar mass is fixed (within
+    stochastic error) or the number of stars is fixed. When using
+    equal-mass stars, both are fixed.
+    """
+
+    if stellar_mass: # 
+        ## Add stars to cluster, until mass limit reached (inclusive!)
+        if initial_mass_function == "kroupa":
+            from amuse.ic.brokenimf import new_kroupa_mass_distribution
+            mass        = new_kroupa_mass_distribution(0)
+            while mass.sum() < stellar_mass:
+                mass.append(
+                        new_kroupa_mass_distribution(
+                            1,
+                            mass_max = upper_mass_limit,
+                            )[0]
+                        )
+            total_mass  = mass.sum()
+            number_of_stars = len(mass)
+        elif initial_mass_function == "salpeter":
+            from amuse.ic.salpeter import new_salpeter_mass_distribution
+            mass        = new_salpeter_mass_distribution(0)
+            while mass.sum() < stellar_mass:
+                mass.append(
+                        new_salpeter_mass_distribution(
+                            1,
+                            mass_max = upper_mass_limit,
+                            )[0]
+                        )
+            total_mass  = mass.sum()
+            number_of_stars = len(mass)
+        elif initial_mass_function == "fixed":
+            mass_of_individual_star = stellar_mass / number_of_stars
+            mass                    = mass_of_individual_star
+            total_mass              = cluster_mass
+        else:
+            return -1, "No mass function"
+    else:
+        ## Give stars their mass       
+        if initial_mass_function == "kroupa":
+            from amuse.ic.brokenimf import new_kroupa_mass_distribution
+            mass = new_kroupa_mass_distribution(
+                    number_of_stars,
+                    mass_max = upper_mass_limit,
+                    )
+            total_mass = mass.sum()
+        elif initial_mass_function == "salpeter":
+            from amuse.ic.salpeter import new_salpeter_mass_distribution
+            mass = new_salpeter_mass_distribution(
+                    number_of_stars,
+                    mass_max = upper_mass_limit,
+                    )
+            total_mass = mass.sum()
+        elif initial_mass_function == "fixed":
+            mass = mass_of_each_star
+            total_mass = number_of_stars * mass
+        else:
+            return -1, "No mass function"
+
+    converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
+            total_mass,
+            1. | units.kms,
+            effective_radius,
+            )
+
+    """
+    Give stars a position and velocity, based on the distribution
+    model.
+    """
+    if star_distribution == "plummer":
+        from amuse.ic.plummer import new_plummer_sphere
+        stars = new_plummer_sphere(
+                number_of_stars, 
+                convert_nbody = converter,
+                )
+    elif star_distribution == "king":
+        from amuse.ic.kingmodel import new_king_model
+        stars = new_king_model(
+                number_of_stars,
+                star_distribution_w0,
+                convert_nbody = converter,
+                )
+    elif star_distribution == "fractal":
+        from amuse.ic.fractalcluster import new_fractal_cluster_model
+        stars = new_fractal_cluster_model(
+                number_of_stars,
+                fractal_dimension = star_distribution_fd,
+                convert_nbody = converter,
+                )
+    else:
+        return -1, "No stellar distribution"
+
+    """
+    set the stellar mass.
+    """
+    stars.mass = mass
+
+    """
+    set other stellar parameters.
+    """
+    stars.metallicity = star_metallicity
+
+    """
+    Virialize the star cluster
+    """
+    stars.move_to_center()
+    stars.scale_to_standard(
+            convert_nbody = converter,
+            #virial_ratio = virial_ratio,
+            #smoothing_length_squared = ...,
+            )
+
+    """
+    Record the cluster's initial parameters to the particle distribution
+    """
+    stars.collection_attributes.initial_mass_function   = initial_mass_function
+    stars.collection_attributes.upper_mass_limit        = upper_mass_limit
+    stars.collection_attributes.number_of_stars         = number_of_stars
+
+    stars.collection_attributes.effective_radius        = effective_radius
+
+    stars.collection_attributes.star_distribution       = star_distribution
+    stars.collection_attributes.star_distribution_w0    = star_distribution_w0
+    stars.collection_attributes.star_distribution_fd    = star_distribution_fd
+
+    stars.collection_attributes.star_metallicity        = star_metallicity
+
+    stars.collection_attributes.gas_distribution        = gas_distribution
+
+    stars.collection_attributes.initial_binary_fraction = initial_binary_fraction
+
+    stars.collection_attributes.virial_ratio            = virial_ratio
+
+    ## Derived/legacy values
+    stars.collection_attributes.converter_mass          =\
+            converter.to_si( 1 | nbody_system.mass)
+    stars.collection_attributes.converter_length        =\
+            converter.to_si( 1 | nbody_system.length)
+    stars.collection_attributes.converter_speed         =\
+            converter.to_si( 1 | nbody_system.speed)
+
+    return stars
 
 if __name__ in ["__main__"]:
     set_printing_strategy(
@@ -165,126 +317,17 @@ if __name__ in ["__main__"]:
         print "no number of stars or cluster mass given, exiting"
         exit()
 
-    if cluster_mass:
-        ## Add stars to cluster, until mass limit reached (inclusive!)
-        if initial_mass_function == "kroupa":
-            from amuse.ic.brokenimf import new_kroupa_mass_distribution
-            mass = new_kroupa_mass_distribution(0)
-            while mass.sum() < cluster_mass:
-                mass.append(
-                        new_kroupa_mass_distribution(
-                            1,
-                            mass_max = upper_mass_limit,
-                            )
-                        )
-            total_mass = mass.sum()
-            number_of_stars = len(mass)
-        elif initial_mass_function == "salpeter":
-            from amuse.ic.salpeter import new_salpeter_mass_distribution
-            mass = new_salpeter_mass_distribution(0)
-            while mass.sum() < cluster_mass:
-                mass.append(
-                        new_salpeter_mass_distribution(
-                            1,
-                            mass_max = upper_mass_limit,
-                            )
-                        )
-            total_mass = mass.sum()
-            number_of_stars = len(mass)
-        elif initial_mass_function == "fixed":
-            mass_of_each_star = cluster_mass / number_of_stars
-            mass = mass_of_each_star
-            total_mass = cluster_mass
-        else:
-            print "No mass function"
-            exit()
-    else:
-        ## Give stars their mass       
-        if initial_mass_function == "kroupa":
-            from amuse.ic.brokenimf import new_kroupa_mass_distribution
-            mass = new_kroupa_mass_distribution(
-                    number_of_stars,
-                    mass_max = upper_mass_limit,
-                    )
-            total_mass = mass.sum()
-        elif initial_mass_function == "salpeter":
-            from amuse.ic.salpeter import new_salpeter_mass_distribution
-            mass = new_salpeter_mass_distribution(
-                    number_of_stars,
-                    mass_max = upper_mass_limit,
-                    )
-            total_mass = mass.sum()
-        elif initial_mass_function == "fixed":
-            mass = mass_of_each_star
-            total_mass = number_of_stars * mass
-        else:
-            print "No mass function"
-            exit()
-
-    converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
-            total_mass,
-            1|units.kms,
-            effective_radius,
+    stars = make_a_star_cluster(
+            stellar_mass            = cluster_mass,
+            initial_mass_function   = initial_mass_function,
+            upper_mass_limit        = upper_mass_limit,
+            number_of_stars         = number_of_stars,
+            effective_radius        = effective_radius,
+            star_distribution       = star_distribution,
+            star_distribution_w0    = king_parameter_w0,
+            star_distribution_fd    = fractal_parameter_fd,
+            star_metallicity        = metallicity
             )
-
-    ## Distribute stars (position + velocity)
-    if star_distribution == "plummer":
-        from amuse.ic.plummer import new_plummer_sphere
-        stars = new_plummer_sphere(
-                number_of_stars, 
-                convert_nbody = converter,
-                )
-    elif star_distribution == "king":
-        from amuse.ic.kingmodel import new_king_model
-        stars = new_king_model(
-                number_of_stars,
-                king_parameter_w0,
-                convert_nbody = converter,
-                )
-    elif star_distribution == "fractal":
-        from amuse.ic.fractalcluster import new_fractal_cluster_model
-        stars = new_fractal_cluster_model(
-                number_of_stars,
-                fractal_dimension = fractal_parameter_fd,
-                convert_nbody = converter,
-                )
-    else:
-        print "No stellar distribution"
-        exit()
-
-    ## set mass of the stars
-    stars.mass = mass
-
-    ## Other parameters
-    stars.metallicity = metallicity
-
-    ## Virialize cluster!
-    stars.move_to_center()
-    stars.scale_to_standard(
-            convert_nbody = converter,
-            #virial_ratio = virial_ratio,
-            #smoothing_length_squared = ...,
-            )
-
-    ## Write initial parameters to distribution
-    stars.collection_attributes.cluster_model_number    = cluster_model_number
-    stars.collection_attributes.star_distribution       = star_distribution
-    stars.collection_attributes.gas_distribution        = gas_distribution
-    stars.collection_attributes.king_parameter_w0       = king_parameter_w0
-    stars.collection_attributes.fractal_parameter_fd    = fractal_parameter_fd
-    stars.collection_attributes.initial_mass_function   = initial_mass_function
-    stars.collection_attributes.number_of_stars         = number_of_stars
-    stars.collection_attributes.upper_mass_limit        = upper_mass_limit
-    stars.collection_attributes.effective_radius        = effective_radius
-    stars.collection_attributes.metallicity             = metallicity
-    stars.collection_attributes.initial_binary_fraction = initial_binary_fraction
-    stars.collection_attributes.virial_ratio            = virial_ratio
-
-    ## Derived/legacy values
-    stars.collection_attributes.Mcluster = stars.mass.sum()
-    stars.collection_attributes.Rcluster = effective_radius
-    stars.collection_attributes.N        = len(stars)
-    stars.collection_attributes.seed     = cluster_model_number
 
     print stars.mass.sum()
     print len(stars)
