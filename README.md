@@ -7,6 +7,10 @@ MASC (Make a star cluster) is an AMUSE-based script to generate a star cluster, 
 - Metallicity
 - Virial ratio
 
+## Requirements
+MASC requires AMUSE (https://github.com/amusecode/amuse) to work.
+The GUI version requires QT4 or QT5 to be installed.
+
 ## Usage:
     $ python make_a_star_cluster.py -h
     usage: make_a_star_cluster.py [-h] [-o CLUSTERNAME] [-type FILE TYPE]
