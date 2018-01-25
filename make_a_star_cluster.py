@@ -1,17 +1,5 @@
 #!/usr/bin/env python
-
-"""
-make_a_star_cluster.py creates a model star cluster,
-which can then be used in N-body simulations or for other purposes.
-
-It requires AMUSE, which can be downloaded from http://amusecode.org or
-https://github.com/amusecode/amuse.
-
-Currently not feature-complete yet, and function/argument names are
-subject to change.
-
--- Steven Rieder steven at rieder punt nl
-"""
+from __future__ import print_function, division
 
 import os
 import argparse
@@ -28,6 +16,18 @@ from amuse.lab import (
         )
 from amuse.support.console import set_printing_strategy
 
+"""
+make_a_star_cluster.py creates a model star cluster,
+which can then be used in N-body simulations or for other purposes.
+
+It requires AMUSE, which can be downloaded from http://amusecode.org or
+https://github.com/amusecode/amuse.
+
+Currently not feature-complete yet, and function/argument names are
+subject to change.
+
+-- Steven Rieder steven at rieder punt nl
+"""
 
 def new_argument_parser():
     parser = argparse.ArgumentParser()
@@ -322,7 +322,7 @@ if __name__ in ["__main__"]:
     np.random.seed(cluster_model_number)
 
     if not (number_of_stars or cluster_mass):
-        print "no number of stars or cluster mass given, exiting"
+        print("no number of stars or cluster mass given, exiting")
         exit()
 
     stars = make_a_star_cluster(
@@ -337,8 +337,8 @@ if __name__ in ["__main__"]:
             star_metallicity=metallicity,
             )
 
-    print stars.mass.sum()
-    print len(stars)
+    print(stars.mass.sum())
+    print(len(stars))
 
     if args.clustername != "auto":
         clustername = args.clustername
