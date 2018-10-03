@@ -12,7 +12,6 @@ from amuse.lab import (
         units,
         nbody_system,
         generic_unit_converter,
-        Particles,
         )
 from amuse.support.console import set_printing_strategy
 
@@ -29,6 +28,7 @@ subject to change.
 -- Steven Rieder steven at rieder punt nl
 """
 
+
 def new_argument_parser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -41,7 +41,7 @@ def new_argument_parser():
             '-type',
             dest='filetype',
             default="amuse",
-            help="Output file type ([amuse]/ascii/starlab/nemo)",
+            help="Output file type ([amuse]/txt/starlab/nemo)",
             )
     parser.add_argument(
             '-N',
@@ -223,21 +223,21 @@ def make_a_star_cluster(
     """
     if star_distribution == "plummer":
         from amuse.ic.plummer import new_plummer_sphere
-        star_centres = new_plummer_sphere(
-                number_of_singles + number_of_primaries,
+        stars = new_plummer_sphere(
+                number_of_stars,
                 convert_nbody=converter,
                 )
     elif star_distribution == "king":
         from amuse.ic.kingmodel import new_king_model
-        star_centres = new_king_model(
-                number_of_singles + number_of_primaries,
+        stars = new_king_model(
+                number_of_stars,
                 star_distribution_w0,
                 convert_nbody=converter,
                 )
     elif star_distribution == "fractal":
         from amuse.ic.fractalcluster import new_fractal_cluster_model
-        star_centres = new_fractal_cluster_model(
-                number_of_singles + number_of_primaries,
+        stars = new_fractal_cluster_model(
+                number_of_stars,
                 fractal_dimension=star_distribution_fd,
                 convert_nbody=converter,
                 )
@@ -259,9 +259,9 @@ def make_a_star_cluster(
     """
     stars.move_to_center()
     stars.scale_to_standard(
-            convert_nbody = converter,
-            #virial_ratio = virial_ratio,
-            #smoothing_length_squared = ...,
+            convert_nbody=converter,
+            # virial_ratio=virial_ratio,
+            # smoothing_length_squared= ...,
             )
 
     """
@@ -296,7 +296,7 @@ if __name__ in ["__main__"]:
             preferred_units=[units.MSun, units.parsec, units.yr, units.kms],
             precision=5,
             )
-    clustertemplate = "TESTCluster_%08i.hdf5"
+    clustertemplate = "TESTCluster_%08i"
 
     args = new_argument_parser()
     cluster_model_number = args.cluster_model_number
@@ -347,7 +347,10 @@ if __name__ in ["__main__"]:
         N = -1
         while cluster_file_exists:
             N += 1
-            clustername = clustertemplate % N
+            clustername = (
+                    clustertemplate % N
+                    + "." + filetype
+                    )
             cluster_file_exists = os.path.isfile(clustername)
 
     write_set_to_file(stars, clustername, filetype)
