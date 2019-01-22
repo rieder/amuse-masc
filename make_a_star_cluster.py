@@ -216,10 +216,7 @@ def make_a_star_cluster(
         1. | units.kms,
         effective_radius,
     )
-    """
-    Give stars a position and velocity, based on the distribution
-    model.
-    """
+    # Give stars a position and velocity, based on the distribution model.
     if star_distribution == "plummer":
         from amuse.ic.plummer import new_plummer_sphere
         stars = new_plummer_sphere(
@@ -243,19 +240,13 @@ def make_a_star_cluster(
     else:
         return -1, "No stellar distribution"
 
-    """
-    set the stellar mass.
-    """
+    # set the stellar mass.
     stars.mass = mass
 
-    """
-    set other stellar parameters.
-    """
+    # set other stellar parameters.
     stars.metallicity = star_metallicity
 
-    """
-    Virialize the star cluster
-    """
+    # Virialize the star cluster
     stars.move_to_center()
     stars.scale_to_standard(
         convert_nbody=converter,
@@ -263,9 +254,7 @@ def make_a_star_cluster(
         # smoothing_length_squared= ...,
     )
 
-    """
-    Record the cluster's initial parameters to the particle distribution
-    """
+    # Record the cluster's initial parameters to the particle distribution
     stars.collection_attributes.initial_mass_function = initial_mass_function
     stars.collection_attributes.upper_mass_limit = upper_mass_limit
     stars.collection_attributes.number_of_stars = number_of_stars
