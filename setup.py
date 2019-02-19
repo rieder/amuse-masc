@@ -5,11 +5,11 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='amuse_masc',
-    version='0.2.0',
+    version='0.2.1a',
     description='Make a star cluster',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='https://gitub.com/rieder/masc',
+    url='https://github.com/rieder/masc',
     author='Steven Rieder',
     author_email='steven@rieder.nl',
     license='MIT',

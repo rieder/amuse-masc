@@ -12,6 +12,24 @@ MASC requires AMUSE (https://github.com/amusecode/amuse) to work.
 The GUI version requires QT4 or QT5 to be installed.
 
 ## Usage:
+Package version:
+
+    from amuse.units import units
+    from amuse_masc import make_a_star_cluster
+    cluster = make_a_star_cluster.new_cluster(
+        number_of_stars=1024,
+        # stellar_mass=False,
+        initial_mass_function='salpeter',
+        upper_mass_limit=125.0 | units.MSun,
+        effective_radius=3.0 | units.parsec,
+        star_distribution='plummer',
+        # star_distribution_w0=7.0,
+        # star_distribution_fd=2.0,
+        star_metallicity=0.01,
+    )
+
+Standalone version:
+
     $ python make_a_star_cluster.py -h
     usage: make_a_star_cluster.py [-h] [-o CLUSTERNAME] [-type FILE TYPE]
                                   [-N NUMBER_OF_STARS] [-M CLUSTER_MASS]
