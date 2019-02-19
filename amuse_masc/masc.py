@@ -4,7 +4,7 @@ try:
     from qtpy.uic import loadUi
     from qtpy.QtWidgets import QApplication, QWidget
     gui = "qt"
-except:
+except ImportError:
     gui = "none"
 
 from matplotlib.figure import Figure
