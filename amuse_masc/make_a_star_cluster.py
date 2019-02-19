@@ -137,7 +137,7 @@ def new_argument_parser():
     return args
 
 
-def make_a_star_cluster(
+def new_cluster(
         stellar_mass=False,
         initial_mass_function="salpeter",
         upper_mass_limit=125. | units.MSun,
@@ -279,7 +279,7 @@ def make_a_star_cluster(
 
 
 def main():
-    "Run make_a_star_cluster"
+    "Make a star cluster"
     set_printing_strategy(
         "custom",
         preferred_units=[units.MSun, units.parsec, units.yr, units.kms],
@@ -314,7 +314,7 @@ def main():
         print("no number of stars or cluster mass given, exiting")
         exit()
 
-    stars = make_a_star_cluster(
+    stars = new_cluster(
         stellar_mass=cluster_mass,
         initial_mass_function=initial_mass_function,
         upper_mass_limit=upper_mass_limit,
