@@ -20,7 +20,7 @@ import numpy as np
 
 # from amuse.lab import *
 from amuse.io import write_set_to_file
-from amuse.lab import (
+from amuse.units import (
     units,
     nbody_system,
     generic_unit_converter,
