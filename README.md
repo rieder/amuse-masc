@@ -15,8 +15,8 @@ The GUI version requires QT4 or QT5 to be installed.
 Package version:
 
     from amuse.units import units
-    from amuse_masc import make_a_star_cluster
-    cluster = make_a_star_cluster.new_cluster(
+    from amuse.ext.masc import new_star_cluster
+    cluster = new_star_cluster(
         number_of_stars=1024,
         # stellar_mass=False,
         initial_mass_function='salpeter',
