@@ -1,0 +1,4 @@
+#
+##### Requirements for installing amuse_masc #####
+#
+amuse

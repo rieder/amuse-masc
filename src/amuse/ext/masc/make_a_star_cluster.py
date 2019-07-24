@@ -20,7 +20,7 @@ import numpy as np
 
 # from amuse.lab import *
 from amuse.io import write_set_to_file
-from amuse.lab import (
+from amuse.units import (
     units,
     nbody_system,
     generic_unit_converter,
@@ -42,7 +42,7 @@ def new_argument_parser():
         dest='filetype',
         default="amuse",
         help="Output file type ([amuse]/txt/starlab/nemo)",
-        )
+    )
     parser.add_argument(
         '-N',
         dest='number_of_stars',
@@ -137,7 +137,7 @@ def new_argument_parser():
     return args
 
 
-def make_a_star_cluster(
+def new_star_cluster(
         stellar_mass=False,
         initial_mass_function="salpeter",
         upper_mass_limit=125. | units.MSun,
@@ -167,7 +167,7 @@ def make_a_star_cluster(
                     new_kroupa_mass_distribution(
                         1,
                         mass_max=upper_mass_limit,
-                        )[0]
+                    )[0]
                 )
             total_mass = mass.sum()
             number_of_stars = len(mass)
@@ -179,7 +179,7 @@ def make_a_star_cluster(
                     new_salpeter_mass_distribution(
                         1,
                         mass_max=upper_mass_limit,
-                        )[0]
+                    )[0]
                 )
             total_mass = mass.sum()
             number_of_stars = len(mass)
@@ -279,7 +279,7 @@ def make_a_star_cluster(
 
 
 def main():
-    "Run make_a_star_cluster"
+    "Make a star cluster"
     set_printing_strategy(
         "custom",
         preferred_units=[units.MSun, units.parsec, units.yr, units.kms],
@@ -314,7 +314,7 @@ def main():
         print("no number of stars or cluster mass given, exiting")
         exit()
 
-    stars = make_a_star_cluster(
+    stars = new_star_cluster(
         stellar_mass=cluster_mass,
         initial_mass_function=initial_mass_function,
         upper_mass_limit=upper_mass_limit,
