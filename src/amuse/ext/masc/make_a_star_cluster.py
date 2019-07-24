@@ -314,7 +314,7 @@ def main():
         print("no number of stars or cluster mass given, exiting")
         exit()
 
-    stars = new_cluster(
+    stars = new_star_cluster(
         stellar_mass=cluster_mass,
         initial_mass_function=initial_mass_function,
         upper_mass_limit=upper_mass_limit,
