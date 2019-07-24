@@ -42,7 +42,7 @@ def new_argument_parser():
         dest='filetype',
         default="amuse",
         help="Output file type ([amuse]/txt/starlab/nemo)",
-        )
+    )
     parser.add_argument(
         '-N',
         dest='number_of_stars',
@@ -167,7 +167,7 @@ def new_star_cluster(
                     new_kroupa_mass_distribution(
                         1,
                         mass_max=upper_mass_limit,
-                        )[0]
+                    )[0]
                 )
             total_mass = mass.sum()
             number_of_stars = len(mass)
@@ -179,7 +179,7 @@ def new_star_cluster(
                     new_salpeter_mass_distribution(
                         1,
                         mass_max=upper_mass_limit,
-                        )[0]
+                    )[0]
                 )
             total_mass = mass.sum()
             number_of_stars = len(mass)
