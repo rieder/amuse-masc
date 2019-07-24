@@ -7,9 +7,12 @@ MASC (Make a star cluster) is an AMUSE-based script to generate a star cluster, 
 - Metallicity
 - Virial ratio
 
+## Not yet supported features
+- Stars in initial binary/triple/multiple configurations
+- Other particles than stars
+
 ## Requirements
 MASC requires AMUSE (https://github.com/amusecode/amuse) to work.
-The GUI version requires QT4 or QT5 to be installed.
 
 ## Usage:
 Package version:
