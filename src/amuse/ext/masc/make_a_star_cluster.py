@@ -137,7 +137,7 @@ def new_argument_parser():
     return args
 
 
-def new_cluster(
+def new_star_cluster(
         stellar_mass=False,
         initial_mass_function="salpeter",
         upper_mass_limit=125. | units.MSun,
