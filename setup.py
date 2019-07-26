@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.3.1"
+version = "0.3.2"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
@@ -43,6 +43,10 @@ all_data_files = []
 
 packages = ['amuse.ext.masc']
 
+package_dir = {
+    'amuse.ext.masc': 'src/amuse/ext/masc'
+}
+
 package_data = {
 }
 
@@ -59,9 +63,10 @@ setup(
     long_description_content_type=long_description_content_type,
     install_requires=install_requires,
     ext_modules=extensions,
-    package_dir={'amuse.ext.masc': 'src/amuse/ext/masc'},
+    package_dir=package_dir,
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
     python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+    scripts=["masc.py"],
 )
