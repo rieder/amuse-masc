@@ -6,22 +6,17 @@ from __future__ import print_function
 #         # orbital_elements_from_binary,
 #         )
 
-from amuse.lab import (
-        units, constants,
-        Particles,
-        # new_salpeter_mass_distribution,
-        write_set_to_file,
-        )
-from amuse.ext.orbital_elements import (
-        generate_binaries,
-        )
-
-import numpy as np
+import numpy
 from numpy import pi
 from numpy.random import (
         random,
         uniform,
         )
+
+from amuse.units import units, constants
+from amuse.datamodel import Particles
+from amuse.io import write_set_to_file
+from amuse.ext.orbital_elements import generate_binaries
 
 
 def circular_velocity(
@@ -41,7 +36,7 @@ def orbital_period_to_semi_major_axis(
     returns semi-major axis for given period and masses
     """
     mu = G * (mass1 + mass2)
-    a3 = (period/(2*np.pi))**2 * mu
+    a3 = (period/(2*pi))**2 * mu
     return a3**(1./3)
 
 
@@ -73,7 +68,7 @@ def new_binary_distribution(
         # This gives us the secondaries' masses
         secondary_mass = mass_ratio * primary_mass
         # secondaries are min_mass at least
-        secondary_mass = np.maximum(secondary_mass, min_mass)
+        secondary_mass = numpy.maximum(secondary_mass, min_mass)
     elif len(secondary_mass) != N:
         print("Number of secondaries is unequal to number of primaries!")
         return -1
@@ -89,10 +84,10 @@ def new_binary_distribution(
     # observed quantity is orbital periods, we start from there.
     mean_log_orbital_period = 5  # 10log of the period in days, (Duchene&Kraus)
     sigma_log_orbital_period = 2.3
-    orbital_period = np.random.lognormal(
+    orbital_period = numpy.random.lognormal(
             size=N,
-            mean=np.log(10) * mean_log_orbital_period,
-            sigma=np.log(10) * sigma_log_orbital_period,
+            mean=numpy.log(10) * mean_log_orbital_period,
+            sigma=numpy.log(10) * sigma_log_orbital_period,
             ) | units.day
     # We need the masses to calculate the corresponding semi-major axes.
     semi_major_axis = orbital_period_to_semi_major_axis(
@@ -101,7 +96,7 @@ def new_binary_distribution(
             secondary_mass,
             )
     # Eccentricity: square root of random value
-    eccentricity = np.sqrt(random(N))
+    eccentricity = numpy.sqrt(random(N))
     # Other orbital elements at random
     inclination = pi * random(N) | units.rad
     true_anomaly = 2 * pi * random(N) | units.rad

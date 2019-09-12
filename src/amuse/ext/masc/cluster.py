@@ -129,13 +129,14 @@ def new_star_cluster(
     # set other stellar parameters.
     stars.metallicity = star_metallicity
 
-    # Virialize the star cluster
-    stars.move_to_center()
-    stars.scale_to_standard(
-        convert_nbody=converter,
-        # virial_ratio=virial_ratio,
-        # smoothing_length_squared= ...,
-    )
+    # Virialize the star cluster if > 1 star
+    if len(stars) > 1:
+        stars.move_to_center()
+        stars.scale_to_standard(
+            convert_nbody=converter,
+            # virial_ratio=virial_ratio,
+            # smoothing_length_squared= ...,
+        )
 
     # Record the cluster's initial parameters to the particle distribution
     stars.collection_attributes.initial_mass_function = initial_mass_function
