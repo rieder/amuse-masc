@@ -1,19 +1,20 @@
 from setuptools import setup
 
-version = "0.3.2"
+version = "0.3.3"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
 license_ = "MIT"
 url = 'http://amusecode.org'
 
-classifiers=[
+classifiers = [
     # Python versions supported by amuse-masc
     "Programming Language :: Python :: 2",
     "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
 
     # License
     "License :: OSI Approved :: MIT License",
