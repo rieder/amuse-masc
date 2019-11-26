@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.3.3"
+version = "0.4.0"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
@@ -9,12 +9,11 @@ url = 'http://amusecode.org'
 
 classifiers = [
     # Python versions supported by amuse-masc
-    "Programming Language :: Python :: 2",
-    "Programming Language :: Python :: 2.7",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
 
     # License
     "License :: OSI Approved :: MIT License",
@@ -31,7 +30,7 @@ classifiers = [
 
 install_requires = [
     'wheel>=0.32',
-    'amuse-framework>=12.0.0',
+    'amuse-framework>=13.0.0',
 ]
 description = 'Make a star cluster'
 with open("README.md", "r") as fh:
@@ -68,6 +67,6 @@ setup(
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
-    python_requires='>=2.7, !=3.0.*, !=3.1.*, !=3.2.*, <4',
+    python_requires='>=3.5, <4',
     scripts=["masc.py"],
 )
