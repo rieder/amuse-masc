@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 # from math import cos, sin, pi
 # from amuse.ext.orbital_elements import (
 #         new_binary_from_orbital_elements,

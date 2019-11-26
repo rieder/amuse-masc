@@ -11,14 +11,12 @@ subject to change.
 
 -- Steven Rieder steven at rieder punt nl
 """
-from __future__ import print_function, division
 
 import os
 import argparse
 
 import numpy as np
 
-# from amuse.lab import *
 from amuse.io import write_set_to_file
 from amuse.units import units
 from amuse.support.console import set_printing_strategy

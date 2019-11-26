@@ -11,7 +11,6 @@ subject to change.
 
 -- Steven Rieder steven at rieder punt nl
 """
-from __future__ import print_function, division
 
 from amuse.units import (
     units,
