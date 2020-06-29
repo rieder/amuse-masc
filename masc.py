@@ -17,15 +17,22 @@ import argparse
 
 import numpy as np
 
-from amuse.io import write_set_to_file
+from amuse.io import write_set_to_file, read_set_from_file
+from amuse.datamodel import Particles
 from amuse.units import units
 from amuse.support.console import set_printing_strategy
-from amuse.ext.masc import new_star_cluster
+from amuse.ext.masc import new_star_cluster, new_stars_from_sink
 
 
 def new_argument_parser():
     "Parse command line arguments"
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--sinks',
+        dest='sinks',
+        default=None,
+        help="Generate stars from sink particles in this file (EXPERIMENTAL)",
+    )
     parser.add_argument(
         '-o',
         dest='clustername',
@@ -100,6 +107,13 @@ def new_argument_parser():
         help='Upper mass limit (in MSun) [125.]',
     )
     parser.add_argument(
+        '-lml',
+        dest='lower_mass_limit',
+        type=float,
+        default=0.1,
+        help='Lower mass limit (in MSun) [0.1]',
+    )
+    parser.add_argument(
         '-Z',
         dest='metallicity',
         type=float,
@@ -141,18 +155,21 @@ def main():
     clustertemplate = "TESTCluster_%08i"
 
     args = new_argument_parser()
+    sinks = args.sinks
     cluster_model_number = args.cluster_model_number
     star_distribution = args.star_distribution
     # gas_distribution = args.gas_distribution
     king_parameter_w0 = args.king_parameter_w0
     fractal_parameter_fd = args.fractal_parameter_fd
-    initial_mass_function = args.initial_mass_function
+    initial_mass_function = args.initial_mass_function.lower()
+
     number_of_stars = args.number_of_stars
     if args.cluster_mass != 0:
         cluster_mass = args.cluster_mass | units.MSun
     else:
         cluster_mass = False
     upper_mass_limit = args.upper_mass_limit | units.MSun
+    lower_mass_limit = args.lower_mass_limit | units.MSun
     effective_radius = args.effective_radius | units.parsec
     metallicity = args.metallicity
     # virial_ratio = args.virial_ratio
@@ -163,24 +180,41 @@ def main():
 
     np.random.seed(cluster_model_number)
 
-    if not (number_of_stars or cluster_mass):
-        print("no number of stars or cluster mass given, exiting")
+    if not (number_of_stars or cluster_mass or sinks):
+        print("no number of stars, cluster mass or origin sinks given, exiting")
         exit()
 
-    stars = new_star_cluster(
-        stellar_mass=cluster_mass,
-        initial_mass_function=initial_mass_function,
-        upper_mass_limit=upper_mass_limit,
-        number_of_stars=number_of_stars,
-        effective_radius=effective_radius,
-        star_distribution=star_distribution,
-        star_distribution_w0=king_parameter_w0,
-        star_distribution_fd=fractal_parameter_fd,
-        star_metallicity=metallicity,
-    )
+    if sinks is not None:
+        sinks = read_set_from_file(sinks, "amuse")
+        m_before = sinks.total_mass()
+        stars = Particles()
+        for sink in sinks:
+            new_stars = new_stars_from_sink(
+                sink,
+                upper_mass_limit=upper_mass_limit,
+                lower_mass_limit=lower_mass_limit,
+                velocity_dispersion=sink.u.sqrt(),
+                initial_mass_function=initial_mass_function,
+                # logger=logger,
+            )
+            stars.add_particles(
+                new_stars
+            )
+    else:
+        stars = new_star_cluster(
+            stellar_mass=cluster_mass,
+            initial_mass_function=initial_mass_function,
+            upper_mass_limit=upper_mass_limit,
+            lower_mass_limit=lower_mass_limit,
+            number_of_stars=number_of_stars,
+            effective_radius=effective_radius,
+            star_distribution=star_distribution,
+            star_distribution_w0=king_parameter_w0,
+            star_distribution_fd=fractal_parameter_fd,
+            star_metallicity=metallicity,
+        )
 
-    print(stars.mass.sum())
-    print(len(stars))
+    print("%i stars generated (%s)" % (len(stars), stars.total_mass().in_(units.MSun)))
 
     if args.clustername != "auto":
         clustername = args.clustername
