@@ -24,7 +24,10 @@ from amuse.units.trigo import sin, cos
 from amuse.datamodel.particles import Particles
 from amuse.ic.plummer import new_plummer_sphere
 from amuse.ic.kingmodel import new_king_model
-from amuse.ic.fractalcluster import new_fractal_cluster_model
+try:
+    from amuse.ic.fractalcluster import new_fractal_cluster_model
+except ImportError:
+    new_fractal_cluster_model = None
 
 
 def new_star_cluster(
