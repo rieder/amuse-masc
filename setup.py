@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.5.1"
+version = "0.5.2"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
