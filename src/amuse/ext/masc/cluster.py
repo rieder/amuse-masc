@@ -60,11 +60,14 @@ def new_star_cluster(
         initial_mass_function = new_flat_mass_distribution
     elif imf_name == "fixed":
         from amuse.ic.flatimf import new_flat_mass_distribution
-        def fixed_mass_distribution(number_of_particles, *list_arguments, **keyword_arguments):
-            return new_fixed_mass_distribution(
+
+        def new_fixed_mass_distribution(
+                number_of_particles, *list_arguments, **keyword_arguments
+        ):
+            return new_flat_mass_distribution(
                 number_of_particles,
-                mass_min=cluster_mass/number_of_stars,
-                mass_max=cluster_mass/number_of_stars,
+                mass_min=stellar_mass/number_of_stars,
+                mass_max=stellar_mass/number_of_stars,
             )
         initial_mass_function = new_fixed_mass_distribution
 
@@ -164,6 +167,7 @@ def new_stars_from_sink(
         origin,
         upper_mass_limit=125 | units.MSun,
         lower_mass_limit=0.1 | units.MSun,
+        default_radius=0.25 | units.pc,
         velocity_dispersion=1 | units.kms,
         logger=None,
         initial_mass_function="kroupa",
@@ -223,7 +227,10 @@ def new_stars_from_sink(
     new_stars.position = origin.position
     new_stars.velocity = origin.velocity
 
-    radius = origin.radius
+    try:
+        radius = origin.radius
+    except AttributeError:
+        radius = default_radius
     rho = numpy.random.random(number_of_stars) * radius
     theta = (
         numpy.random.random(number_of_stars)

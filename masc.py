@@ -145,6 +145,7 @@ def new_argument_parser():
     args = parser.parse_args()
     return args
 
+
 def main():
     "Make a star cluster"
     set_printing_strategy(
@@ -181,18 +182,20 @@ def main():
     np.random.seed(cluster_model_number)
 
     if not (number_of_stars or cluster_mass or sinks):
-        print("no number of stars, cluster mass or origin sinks given, exiting")
+        print(
+            "no number of stars, cluster mass or origin sinks given, exiting"
+        )
         exit()
 
     if sinks is not None:
         sinks = read_set_from_file(sinks, "amuse")
-        m_before = sinks.total_mass()
         stars = Particles()
         for sink in sinks:
             new_stars = new_stars_from_sink(
                 sink,
                 upper_mass_limit=upper_mass_limit,
                 lower_mass_limit=lower_mass_limit,
+                default_radius=effective_radius,
                 velocity_dispersion=sink.u.sqrt(),
                 initial_mass_function=initial_mass_function,
                 # logger=logger,
@@ -214,7 +217,10 @@ def main():
             star_metallicity=metallicity,
         )
 
-    print("%i stars generated (%s)" % (len(stars), stars.total_mass().in_(units.MSun)))
+    print(
+        "%i stars generated (%s)"
+        % (len(stars), stars.total_mass().in_(units.MSun))
+    )
 
     if args.clustername != "auto":
         clustername = args.clustername
