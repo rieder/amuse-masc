@@ -207,7 +207,7 @@ def main():
             try:
                 velocity_dispersion = sink.u.sqrt()
             except AttributeError:
-                velocity_dispersion = args.velocity_dispersion
+                velocity_dispersion = args.velocity_dispersion | units.kms
             new_stars = new_stars_from_sink(
                 sink,
                 upper_mass_limit=upper_mass_limit,
@@ -240,19 +240,27 @@ def main():
     )
 
     if args.clustername != "auto":
-        clustername = args.clustername
-    else:
-        cluster_file_exists = True
-        N = -1
-        while cluster_file_exists:
-            N += 1
-            clustername = (
-                clustertemplate % N
-                + "." + filetype
-            )
-            cluster_file_exists = os.path.isfile(clustername)
+        clustertemplate = args.clustername + "%s"
 
-    write_set_to_file(stars, clustername, filetype)
+    stars_file_exists = True
+    sinks_file_exists = True
+    N = -1
+    while (stars_file_exists or sinks_file_exists):
+        N += 1
+        starsfilename = (
+            clustertemplate % N
+            + "-stars." + filetype
+        )
+        stars_file_exists = os.path.isfile(starsfilename)
+        sinksfilename = (
+            clustertemplate % N
+            + "-sinks." + filetype
+        )
+        sinks_file_exists = os.path.isfile(sinksfilename)
+
+    write_set_to_file(stars, starsfilename, filetype)
+    if sinks is not None:
+        write_set_to_file(sinks, sinksfilename, filetype)
 
 
 if __name__ in ["__main__"]:
