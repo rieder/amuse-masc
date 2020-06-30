@@ -132,16 +132,29 @@ def new_argument_parser():
         dest='effective_radius',
         type=float,
         default=3.0,
-        help='Cluster radius [3.0] (parsec)',
+        help=(
+            "Cluster radius / default radius when forming stars from sinks"
+            " [3.0] (parsec)"
+        ),
     )
     parser.add_argument(
-        '-vr',
-        dest='virial_ratio',
+        '--vel',
+        dest='velocity_dispersion',
         type=float,
-        default=0.5,
-        help="Virial ration [0.5], 0.5=stable, 0.75=just expelled gas, \
-                0.1=collapsing",
+        default=1.0,
+        help=(
+            "Default velocity dispersion when forming stars from sinks"
+            " [1.0] (km/s)"
+        ),
     )
+    # parser.add_argument(
+    #     '-vr',
+    #     dest='virial_ratio',
+    #     type=float,
+    #     default=0.5,
+    #     help="Virial ration [0.5], 0.5=stable, 0.75=just expelled gas, \
+    #             0.1=collapsing",
+    # )
     args = parser.parse_args()
     return args
 
@@ -191,12 +204,16 @@ def main():
         sinks = read_set_from_file(sinks, "amuse")
         stars = Particles()
         for sink in sinks:
+            try:
+                velocity_dispersion = sink.u.sqrt()
+            except AttributeError:
+                velocity_dispersion = args.velocity_dispersion
             new_stars = new_stars_from_sink(
                 sink,
                 upper_mass_limit=upper_mass_limit,
                 lower_mass_limit=lower_mass_limit,
                 default_radius=effective_radius,
-                velocity_dispersion=sink.u.sqrt(),
+                velocity_dispersion=velocity_dispersion,
                 initial_mass_function=initial_mass_function,
                 # logger=logger,
             )
