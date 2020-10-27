@@ -57,7 +57,7 @@ def new_argument_parser():
         dest='cluster_mass',
         type=float,
         default=0,
-        help='Cluster mass (takes precedence over number of stars)',
+        help='Cluster mass (in MSun) (takes precedence over number of stars)',
     )
     parser.add_argument(
         '-dist',
@@ -104,14 +104,14 @@ def new_argument_parser():
         dest='upper_mass_limit',
         type=float,
         default=125.,
-        help='Upper mass limit (in MSun) [125.]',
+        help='Upper mass limit for stars (in MSun) [125.]',
     )
     parser.add_argument(
         '-lml',
         dest='lower_mass_limit',
         type=float,
         default=0.1,
-        help='Lower mass limit (in MSun) [0.1]',
+        help='Lower mass limit for stars (in MSun) [0.1]',
     )
     parser.add_argument(
         '-Z',
@@ -134,7 +134,7 @@ def new_argument_parser():
         default=3.0,
         help=(
             "Cluster radius / default radius when forming stars from sinks"
-            " [3.0] (parsec)"
+            " [3.0] (in parsec)"
         ),
     )
     parser.add_argument(
@@ -144,7 +144,7 @@ def new_argument_parser():
         default=1.0,
         help=(
             "Default velocity dispersion when forming stars from sinks"
-            " [1.0] (km/s)"
+            " [1.0] (in km/s)"
         ),
     )
     # parser.add_argument(
