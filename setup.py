@@ -1,6 +1,5 @@
 from setuptools import setup
 
-version = "0.5.3"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
@@ -30,7 +29,7 @@ classifiers = [
 
 install_requires = [
     'wheel>=0.32',
-    'amuse-framework>=13.0.0',
+    'amuse-framework>=2021.3.0',
 ]
 description = 'Make a star cluster'
 with open("README.md", "r") as fh:
@@ -52,7 +51,10 @@ package_data = {
 
 setup(
     name=name,
-    version=version,
+    use_scm_version={
+        "write_to": "src/amuse/ext/masc/version.py",
+    },
+    setup_requires=['setuptools_scm'],
     classifiers=classifiers,
     url=url,
     author_email=author_email,
