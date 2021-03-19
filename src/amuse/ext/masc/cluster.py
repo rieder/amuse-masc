@@ -73,6 +73,8 @@ def new_star_cluster(
                 mass_max=stellar_mass/number_of_stars,
             )
         initial_mass_function = new_fixed_mass_distribution
+    else:
+        raise ValueError("This imf is not implemented")
 
     if stellar_mass:
         # Add stars to cluster, until mass limit reached (inclusive!)
