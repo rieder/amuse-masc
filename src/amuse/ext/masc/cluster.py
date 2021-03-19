@@ -11,15 +11,17 @@ subject to change.
 
 -- Steven Rieder steven at rieder punt nl
 """
-
 import logging
 
 import numpy
 from amuse.datamodel.particles import Particles
 from amuse.ic.kingmodel import new_king_model
 from amuse.ic.plummer import new_plummer_sphere
-from amuse.units import generic_unit_converter, nbody_system, units
-from amuse.units.trigo import cos, sin
+from amuse.units import generic_unit_converter
+from amuse.units import nbody_system
+from amuse.units import units
+from amuse.units.trigo import cos
+from amuse.units.trigo import sin
 
 try:
     from amuse.ic.fractalcluster import new_fractal_cluster_model
