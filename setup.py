@@ -1,6 +1,6 @@
 from setuptools import setup
 
-version = "0.5.4"
+version = "0.6"
 name = 'amuse-masc'
 author = 'Steven Rieder'
 author_email = 'steven@rieder.nl'
@@ -30,7 +30,7 @@ classifiers = [
 
 install_requires = [
     'wheel>=0.32',
-    'amuse-framework>=13.0.0',
+    'amuse-framework>=2021.7.0',
 ]
 description = 'Make a star cluster'
 with open("README.md", "r") as fh:
