@@ -30,27 +30,14 @@ except ImportError:
     new_fractal_cluster_model = None
 
 
-def new_star_cluster(
-        stellar_mass=False,
-        initial_mass_function="salpeter",
-        upper_mass_limit=125. | units.MSun,
-        lower_mass_limit=0.1 | units.MSun,
-        number_of_stars=1024,
-        effective_radius=3.0 | units.parsec,
-        star_distribution="plummer",
-        star_distribution_w0=7.0,
-        star_distribution_fd=2.0,
-        star_metallicity=0.01,
-        # initial_binary_fraction=0,
-        **kwargs
+def new_masses(
+    stellar_mass=False,
+    initial_mass_function="salpeter",
+    upper_mass_limit=125. | units.MSun,
+    lower_mass_limit=0.1 | units.MSun,
+    number_of_stars=1024,
+    exceed_mass=True,
 ):
-    """
-    Create stars.
-    When using an IMF, either the stellar mass is fixed (within
-    stochastic error) or the number of stars is fixed. When using
-    equal-mass stars, both are fixed.
-    """
-
     imf_name = initial_mass_function.lower()
     if imf_name == "salpeter":
         from amuse.ic.salpeter import new_salpeter_mass_distribution
@@ -83,8 +70,14 @@ def new_star_cluster(
             mass_max=upper_mass_limit,
         )
         previous_number_of_stars = len(mass)
-        # Limit to stars not exceeding stellar_mass
-        mass = mass[mass.cumsum() < stellar_mass]
+        if exceed_mass:
+            # Allow one final star to exceed stellar_mass
+            final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
+            if (final_star > 1 and final_star < len(mass)):
+                mass = mass[:final_star]
+        else:
+            # Limit to stars not exceeding stellar_mass
+            mass = mass[mass.cumsum() < stellar_mass]
 
         additional_mass = [] | units.MSun
         while True:
@@ -96,13 +89,20 @@ def new_star_cluster(
                 mass_min=lower_mass_limit,
                 mass_max=upper_mass_limit,
             )
-            mass.append(
-                additional_mass[
+            if exceed_mass:
+                # Allow one final star to exceed stellar_mass
+                final_star = 1+numpy.argmax(
+                    mass.sum() + additional_mass.cumsum() > stellar_mass
+                )
+                if (final_star > 1 and final_star < len(mass)):
+                    additional_mass = additional_mass[:final_star]
+            else:
+                # Limit to stars not exceeding stellar_mass
+                additional_mass = additional_mass[
                     mass.sum() + additional_mass.cumsum() < stellar_mass
                 ]
-            )
+            mass.append(additional_mass)
         number_of_stars = len(mass)
-        total_mass = mass.sum()
     else:
         # Give stars their mass
         mass = initial_mass_function(
@@ -110,8 +110,42 @@ def new_star_cluster(
             mass_min=lower_mass_limit,
             mass_max=upper_mass_limit,
         )
-        total_mass = mass.sum()
 
+    return mass
+
+
+def new_star_cluster(
+        stellar_mass=False,
+        initial_mass_function="salpeter",
+        upper_mass_limit=125. | units.MSun,
+        lower_mass_limit=0.1 | units.MSun,
+        number_of_stars=1024,
+        effective_radius=3.0 | units.parsec,
+        star_distribution="plummer",
+        star_distribution_w0=7.0,
+        star_distribution_fd=2.0,
+        star_metallicity=0.01,
+        # initial_binary_fraction=0,
+        **kwargs
+):
+    """
+    Create stars.
+    When using an IMF, either the stellar mass is fixed (within
+    stochastic error) or the number of stars is fixed. When using
+    equal-mass stars, both are fixed.
+    """
+
+    mass = new_masses(
+        stellar_mass=stellar_mass,
+        initial_mass_function=initial_mass_function,
+        upper_mass_limit=upper_mass_limit,
+        lower_mass_limit=lower_mass_limit,
+        number_of_stars=number_of_stars,
+    )
+    total_mass = mass.sum()
+    number_of_stars = len(mass)
+
+    print(number_of_stars, total_mass, effective_radius)
     converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
         total_mass,
         1. | units.kms,
@@ -154,7 +188,8 @@ def new_star_cluster(
         )
 
     # Record the cluster's initial parameters to the particle distribution
-    stars.collection_attributes.initial_mass_function = imf_name
+    stars.collection_attributes.initial_mass_function = \
+        initial_mass_function.lower()
     stars.collection_attributes.upper_mass_limit = upper_mass_limit
     stars.collection_attributes.lower_mass_limit = lower_mass_limit
     stars.collection_attributes.number_of_stars = number_of_stars
