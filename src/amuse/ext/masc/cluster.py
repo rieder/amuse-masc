@@ -75,22 +75,34 @@ def new_star_cluster(
         initial_mass_function = new_fixed_mass_distribution
 
     if stellar_mass:
-        # Add stars to cluster, until mass limit reached (inclusive!)
+        # best underestimate mean_mass a bit for faster results
+        mean_mass = 0.25 | units.MSun
         mass = initial_mass_function(
-            0,
+            int(stellar_mass / mean_mass),
             mass_min=lower_mass_limit,
             mass_max=upper_mass_limit,
         )
-        while mass.sum() < stellar_mass:
-            mass.append(
-                initial_mass_function(
-                    1,
-                    mass_min=lower_mass_limit,
-                    mass_max=upper_mass_limit,
-                )[0]
+        previous_number_of_stars = len(mass)
+        # Limit to stars not exceeding stellar_mass
+        mass = mass[mass.cumsum() < stellar_mass]
+
+        additional_mass = [] | units.MSun
+        while True:
+            if previous_number_of_stars + len(additional_mass) > len(mass):
+                break
+            # We don't have enough stars yet, or at least not tested this
+            additional_mass = initial_mass_function(
+                int(stellar_mass / mean_mass),
+                mass_min=lower_mass_limit,
+                mass_max=upper_mass_limit,
             )
-        total_mass = mass.sum()
+            mass.append(
+                additional_mass[
+                    mass.sum() + additional_mass.cumsum() < stellar_mass
+                ]
+            )
         number_of_stars = len(mass)
+        total_mass = mass.sum()
     else:
         # Give stars their mass
         mass = initial_mass_function(
