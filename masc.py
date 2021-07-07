@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 make_a_star_cluster.py creates a model star cluster,
 which can then be used in N-body simulations or for other purposes.
