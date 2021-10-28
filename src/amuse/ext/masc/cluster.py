@@ -80,8 +80,9 @@ def new_masses(
             mass = mass[mass.cumsum() < stellar_mass]
 
         additional_mass = [] | units.MSun
-        while True:
-            if previous_number_of_stars + len(additional_mass) > len(mass):
+        count_failsafe = 0
+        while count_failsafe > 10:
+            if len(mass) > number_of_stars:
                 break
             # We don't have enough stars yet, or at least not tested this
             additional_mass = initial_mass_function(
@@ -102,6 +103,7 @@ def new_masses(
                     mass.sum() + additional_mass.cumsum() < stellar_mass
                 ]
             mass.append(additional_mass)
+            count_failsafe += 1
         number_of_stars = len(mass)
     else:
         # Give stars their mass
@@ -111,6 +113,7 @@ def new_masses(
             mass_max=upper_mass_limit,
         )
 
+    mass = mass.flatten() 
     return mass
 
 
