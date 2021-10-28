@@ -113,6 +113,7 @@ def new_masses(
             mass_max=upper_mass_limit,
         )
 
+    mass = mass.flatten() 
     return mass
 
 
