@@ -63,9 +63,9 @@ def new_masses(
 
     if stellar_mass:
         # best underestimate mean_mass a bit for faster results
-        mean_mass = 0.25 | units.MSun
+        mean_mass = max(0.25 | units.MSun, lower_mass_limit)
         mass = initial_mass_function(
-            int(stellar_mass / mean_mass),
+            max(1, int(stellar_mass / mean_mass)),
             mass_min=lower_mass_limit,
             mass_max=upper_mass_limit,
         )
@@ -81,11 +81,13 @@ def new_masses(
 
         additional_mass = [] | units.MSun
         while True:
+            if stellar_mass < mass.sum():
+                break
             if previous_number_of_stars + len(additional_mass) > len(mass):
                 break
             # We don't have enough stars yet, or at least not tested this
             additional_mass = initial_mass_function(
-                int(stellar_mass / mean_mass),
+                max(1, int(stellar_mass / mean_mass)),
                 mass_min=lower_mass_limit,
                 mass_max=upper_mass_limit,
             )
@@ -96,12 +98,15 @@ def new_masses(
                 )
                 if (final_star > 1 and final_star < len(mass)):
                     additional_mass = additional_mass[:final_star]
+                mass.append(additional_mass)
             else:
                 # Limit to stars not exceeding stellar_mass
-                additional_mass = additional_mass[
+                additional_mass_used = additional_mass[
                     mass.sum() + additional_mass.cumsum() < stellar_mass
                 ]
-            mass.append(additional_mass)
+                mass.append(additional_mass_used)
+                if len(additional_mass_used) < len(additional_mass):
+                    break
         number_of_stars = len(mass)
     else:
         # Give stars their mass
@@ -145,7 +150,6 @@ def new_star_cluster(
     total_mass = mass.sum()
     number_of_stars = len(mass)
 
-    print(number_of_stars, total_mass, effective_radius)
     converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
         total_mass,
         1. | units.kms,
