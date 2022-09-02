@@ -37,7 +37,11 @@ def new_masses(
     lower_mass_limit=0.1 | units.MSun,
     number_of_stars=1024,
     exceed_mass=True,
+    sort_by_mass=False,
 ):
+    """
+    Creates new stellar masses.
+    """
     imf_name = initial_mass_function.lower()
     if imf_name == "salpeter":
         from amuse.ic.salpeter import new_salpeter_mass_distribution
@@ -116,6 +120,8 @@ def new_masses(
             mass_max=upper_mass_limit,
         )
 
+    if sort_by_mass:
+        mass = numpy.flip(mass.number) | mass.unit
     return mass
 
 
