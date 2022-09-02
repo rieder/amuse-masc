@@ -121,7 +121,7 @@ def new_masses(
         )
 
     if sort_by_mass:
-        mass = numpy.flip(mass.sorted().number) | mass.unit
+        mass = mass.sorted()[::-1]
         if exceed_mass:
             final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
             if (final_star > 1 and final_star < len(mass)):
