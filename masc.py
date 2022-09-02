@@ -12,6 +12,7 @@ subject to change.
 -- Steven Rieder steven at rieder punt nl
 """
 
+import sys
 import os
 import argparse
 
@@ -198,7 +199,7 @@ def main():
         print(
             "no number of stars, cluster mass or origin sinks given, exiting"
         )
-        exit()
+        sys.exit()
 
     if sinks is not None:
         sinks = read_set_from_file(sinks, "amuse")
@@ -235,8 +236,8 @@ def main():
         )
 
     print(
-        "%i stars generated (%s)"
-        % (len(stars), stars.total_mass().in_(units.MSun))
+        f"{len(stars)} stars generated "
+        f"({stars.total_mass().in_(units.MSun)})"
     )
 
     if args.clustername != "auto":
@@ -244,16 +245,16 @@ def main():
 
     stars_file_exists = True
     sinks_file_exists = True
-    N = -1
+    filenumber = -1
     while (stars_file_exists or sinks_file_exists):
-        N += 1
+        filenumber += 1
         starsfilename = (
-            clustertemplate % N
+            clustertemplate % filenumber
             + "-stars." + filetype
         )
         stars_file_exists = os.path.isfile(starsfilename)
         sinksfilename = (
-            clustertemplate % N
+            clustertemplate % filenumber
             + "-sinks." + filetype
         )
         sinks_file_exists = os.path.isfile(sinksfilename)
