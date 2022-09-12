@@ -5,17 +5,13 @@
 #         )
 
 import numpy
-from numpy import pi
-from numpy.random import (
-    random,
-    uniform,
-)
-
-from amuse.units import units, constants
 from amuse.datamodel import Particles
+from amuse.ext.orbital_elements import generate_binaries
 from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.io import write_set_to_file
-from amuse.ext.orbital_elements import generate_binaries
+from amuse.units import constants, units
+from numpy import pi
+from numpy.random import random, uniform
 
 
 def circular_velocity(
