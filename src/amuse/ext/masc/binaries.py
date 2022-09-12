@@ -3,19 +3,16 @@
 #         new_binary_from_orbital_elements,
 #         # orbital_elements_from_binary,
 #         )
-
 import numpy
-from numpy import pi
-from numpy.random import (
-        random,
-        uniform,
-        )
-
-from amuse.units import units, constants
 from amuse.datamodel import Particles
+from amuse.ext.orbital_elements import generate_binaries
 from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.io import write_set_to_file
-from amuse.ext.orbital_elements import generate_binaries
+from amuse.units import constants
+from amuse.units import units
+from numpy import pi
+from numpy.random import random
+from numpy.random import uniform
 
 
 def circular_velocity(
@@ -23,30 +20,29 @@ def circular_velocity(
     secondary,
     G=constants.G,
 ):
-    v_circ = (
-        G * (primary.mass + secondary.mass)
-        / (secondary.position-primary.position).length()
-        )**0.5
+    v_circ = (G * (primary.mass + secondary.mass) /
+              (secondary.position - primary.position).length())**0.5
     return v_circ
 
 
-def orbital_period_to_semi_major_axis(
-    orbital_period, mass1, mass2=0 | units.MSun, G=constants.G
-):
+def orbital_period_to_semi_major_axis(orbital_period,
+                                      mass1,
+                                      mass2=0 | units.MSun,
+                                      G=constants.G):
     """
     returns semi-major axis for given period and masses
     """
     mu = G * (mass1 + mass2)
-    a3 = (orbital_period/(2*pi))**2 * mu
-    return a3**(1./3)
+    a3 = (orbital_period / (2 * pi))**2 * mu
+    return a3**(1.0 / 3)
 
 
 def new_binary_distribution(
-        primary_masses,
-        secondary_masses=None,
-        binaries=None,
-        min_mass=0.01 | units.MSun,
-        ):
+    primary_masses,
+    secondary_masses=None,
+    binaries=None,
+    min_mass=0.01 | units.MSun,
+):
     """
     Takes primary masses, and returns a set of stars and a set of binaries
     formed by these stars.
@@ -80,33 +76,31 @@ def new_binary_distribution(
         sm = primary_masses.minimum(secondary_masses)
         primary_masses = pm
         secondary_masses = sm
-        del(pm, sm)
+        del (pm, sm)
     # Now, we need to calculate the semi-major axes for the binaries. Since the
     # observed quantity is orbital periods, we start from there.
     mean_log_orbital_period = 5  # 10log of the period in days, (Duchene&Kraus)
     sigma_log_orbital_period = 2.3
-    orbital_period = numpy.random.lognormal(
-            size=number_of_primaries,
-            mean=numpy.log(10) * mean_log_orbital_period,
-            sigma=numpy.log(10) * sigma_log_orbital_period,
-            ) | units.day
+    orbital_period = (numpy.random.lognormal(
+        size=number_of_primaries,
+        mean=numpy.log(10) * mean_log_orbital_period,
+        sigma=numpy.log(10) * sigma_log_orbital_period,
+    )
+                      | units.day)
     # We need the masses to calculate the corresponding semi-major axes.
     semi_major_axis = orbital_period_to_semi_major_axis(
-            orbital_period,
-            primary_masses,
-            secondary_masses,
-            )
+        orbital_period,
+        primary_masses,
+        secondary_masses,
+    )
     # Eccentricity: square root of random value
     eccentricity = numpy.sqrt(random(number_of_primaries))
     # Other orbital elements at random
     inclination = pi * random(number_of_primaries) | units.rad
     true_anomaly = 2 * pi * random(number_of_primaries) | units.rad
-    longitude_of_the_ascending_node = (
-        2 * pi * random(number_of_primaries)
-    ) | units.rad
-    argument_of_periapsis = (
-        2 * pi * random(number_of_primaries)
-    ) | units.rad
+    longitude_of_the_ascending_node = (2 * pi *
+                                       random(number_of_primaries)) | units.rad
+    argument_of_periapsis = (2 * pi * random(number_of_primaries)) | units.rad
     primaries, secondaries = generate_binaries(
         primary_masses,
         secondary_masses,
@@ -117,7 +111,7 @@ def new_binary_distribution(
         longitude_of_the_ascending_node=longitude_of_the_ascending_node,
         argument_of_periapsis=argument_of_periapsis,
         G=constants.G,
-        )
+    )
     stars = Particles()
 
     if hasattr(binaries, "position"):
@@ -141,12 +135,8 @@ def new_binary_distribution(
 
 def main():
     number_of_pairs = 4
-    primary_masses = new_kroupa_mass_distribution(
-        number_of_pairs
-    )
-    stars, binaries = new_binary_distribution(
-        primary_masses,
-    )
+    primary_masses = new_kroupa_mass_distribution(number_of_pairs)
+    stars, binaries = new_binary_distribution(primary_masses, )
     write_set_to_file(stars, "stars.amuse")
     write_set_to_file(binaries, "binaries.amuse")
 
