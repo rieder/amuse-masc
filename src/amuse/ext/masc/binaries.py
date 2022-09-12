@@ -3,15 +3,16 @@
 #         new_binary_from_orbital_elements,
 #         # orbital_elements_from_binary,
 #         )
-
 import numpy
 from amuse.datamodel import Particles
 from amuse.ext.orbital_elements import generate_binaries
 from amuse.ic.kroupa import new_kroupa_mass_distribution
 from amuse.io import write_set_to_file
-from amuse.units import constants, units
+from amuse.units import constants
+from amuse.units import units
 from numpy import pi
-from numpy.random import random, uniform
+from numpy.random import random
+from numpy.random import uniform
 
 
 def circular_velocity(
