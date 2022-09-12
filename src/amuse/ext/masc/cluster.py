@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 """
-make_a_star_cluster.py creates a model star cluster,
-which can then be used in N-body simulations or for other purposes.
+MASC creates a model star cluster, which can then be used in N-body simulations
+or for other purposes.
 
 It requires AMUSE, which can be downloaded from http://amusecode.org or
 https://github.com/amusecode/amuse.
 
 Currently not feature-complete yet, and function/argument names are
 subject to change.
-
--- Steven Rieder steven at rieder punt nl
 """
 
 import logging
@@ -32,7 +30,7 @@ except ImportError:
 
 def new_masses(
     stellar_mass=False,
-    initial_mass_function="salpeter",
+    initial_mass_function="kroupa",
     upper_mass_limit=125. | units.MSun,
     lower_mass_limit=0.1 | units.MSun,
     number_of_stars=1024,
