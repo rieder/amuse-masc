@@ -7,9 +7,9 @@
 import numpy
 from numpy import pi
 from numpy.random import (
-        random,
-        uniform,
-        )
+    random,
+    uniform,
+)
 
 from amuse.units import units, constants
 from amuse.datamodel import Particles
@@ -26,7 +26,7 @@ def circular_velocity(
     v_circ = (
         G * (primary.mass + secondary.mass)
         / (secondary.position-primary.position).length()
-        )**0.5
+    )**0.5
     return v_circ
 
 
@@ -46,7 +46,7 @@ def new_binary_distribution(
         secondary_masses=None,
         binaries=None,
         min_mass=0.01 | units.MSun,
-        ):
+):
     """
     Takes primary masses, and returns a set of stars and a set of binaries
     formed by these stars.
@@ -80,22 +80,22 @@ def new_binary_distribution(
         sm = primary_masses.minimum(secondary_masses)
         primary_masses = pm
         secondary_masses = sm
-        del(pm, sm)
+        del (pm, sm)
     # Now, we need to calculate the semi-major axes for the binaries. Since the
     # observed quantity is orbital periods, we start from there.
     mean_log_orbital_period = 5  # 10log of the period in days, (Duchene&Kraus)
     sigma_log_orbital_period = 2.3
     orbital_period = numpy.random.lognormal(
-            size=number_of_primaries,
-            mean=numpy.log(10) * mean_log_orbital_period,
-            sigma=numpy.log(10) * sigma_log_orbital_period,
-            ) | units.day
+        size=number_of_primaries,
+        mean=numpy.log(10) * mean_log_orbital_period,
+        sigma=numpy.log(10) * sigma_log_orbital_period,
+    ) | units.day
     # We need the masses to calculate the corresponding semi-major axes.
     semi_major_axis = orbital_period_to_semi_major_axis(
-            orbital_period,
-            primary_masses,
-            secondary_masses,
-            )
+        orbital_period,
+        primary_masses,
+        secondary_masses,
+    )
     # Eccentricity: square root of random value
     eccentricity = numpy.sqrt(random(number_of_primaries))
     # Other orbital elements at random
@@ -117,7 +117,7 @@ def new_binary_distribution(
         longitude_of_the_ascending_node=longitude_of_the_ascending_node,
         argument_of_periapsis=argument_of_periapsis,
         G=constants.G,
-        )
+    )
     stars = Particles()
 
     if hasattr(binaries, "position"):
