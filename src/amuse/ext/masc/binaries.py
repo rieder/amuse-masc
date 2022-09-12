@@ -24,9 +24,10 @@ def circular_velocity(
     G=constants.G,
 ):
     v_circ = (
-        G * (primary.mass + secondary.mass)
-        / (secondary.position-primary.position).length()
-    )**0.5
+        G
+        * (primary.mass + secondary.mass)
+        / (secondary.position - primary.position).length()
+    ) ** 0.5
     return v_circ
 
 
@@ -37,15 +38,15 @@ def orbital_period_to_semi_major_axis(
     returns semi-major axis for given period and masses
     """
     mu = G * (mass1 + mass2)
-    a3 = (orbital_period/(2*pi))**2 * mu
-    return a3**(1./3)
+    a3 = (orbital_period / (2 * pi)) ** 2 * mu
+    return a3 ** (1.0 / 3)
 
 
 def new_binary_distribution(
-        primary_masses,
-        secondary_masses=None,
-        binaries=None,
-        min_mass=0.01 | units.MSun,
+    primary_masses,
+    secondary_masses=None,
+    binaries=None,
+    min_mass=0.01 | units.MSun,
 ):
     """
     Takes primary masses, and returns a set of stars and a set of binaries
@@ -85,11 +86,14 @@ def new_binary_distribution(
     # observed quantity is orbital periods, we start from there.
     mean_log_orbital_period = 5  # 10log of the period in days, (Duchene&Kraus)
     sigma_log_orbital_period = 2.3
-    orbital_period = numpy.random.lognormal(
-        size=number_of_primaries,
-        mean=numpy.log(10) * mean_log_orbital_period,
-        sigma=numpy.log(10) * sigma_log_orbital_period,
-    ) | units.day
+    orbital_period = (
+        numpy.random.lognormal(
+            size=number_of_primaries,
+            mean=numpy.log(10) * mean_log_orbital_period,
+            sigma=numpy.log(10) * sigma_log_orbital_period,
+        )
+        | units.day
+    )
     # We need the masses to calculate the corresponding semi-major axes.
     semi_major_axis = orbital_period_to_semi_major_axis(
         orbital_period,
@@ -101,12 +105,8 @@ def new_binary_distribution(
     # Other orbital elements at random
     inclination = pi * random(number_of_primaries) | units.rad
     true_anomaly = 2 * pi * random(number_of_primaries) | units.rad
-    longitude_of_the_ascending_node = (
-        2 * pi * random(number_of_primaries)
-    ) | units.rad
-    argument_of_periapsis = (
-        2 * pi * random(number_of_primaries)
-    ) | units.rad
+    longitude_of_the_ascending_node = (2 * pi * random(number_of_primaries)) | units.rad
+    argument_of_periapsis = (2 * pi * random(number_of_primaries)) | units.rad
     primaries, secondaries = generate_binaries(
         primary_masses,
         secondary_masses,
@@ -141,9 +141,7 @@ def new_binary_distribution(
 
 def main():
     number_of_pairs = 4
-    primary_masses = new_kroupa_mass_distribution(
-        number_of_pairs
-    )
+    primary_masses = new_kroupa_mass_distribution(number_of_pairs)
     stars, binaries = new_binary_distribution(
         primary_masses,
     )
