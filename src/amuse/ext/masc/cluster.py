@@ -62,6 +62,8 @@ def new_masses(
                 mass_max=stellar_mass/number_of_stars,
             )
         initial_mass_function = new_fixed_mass_distribution
+    else:
+        raise ValueError("This imf is not implemented")
 
     if stellar_mass:
         # best underestimate mean_mass a bit for faster results
