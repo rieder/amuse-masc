@@ -49,7 +49,7 @@ classifiers = [
 ]
 
 try:
-    from src.amuse.ext.ekster.version import version
+    from src.amuse.ext.masc.version import version
     use_scm_version = False
 except ImportError:
     version = False
@@ -57,7 +57,7 @@ except ImportError:
     use_scm_version = {
         "root": ".",
         "relative_to": __file__,
-        "write_to": "src/amuse/ext/ekster/version.py",
+        "write_to": "src/amuse/ext/masc/version.py",
     }
 
 setup(
@@ -80,7 +80,7 @@ setup(
     ext_modules=extensions,
     package_dir={
         'amuse.ext.masc': 'src/amuse/ext/masc',
-    }
+    },
     packages=packages,
     package_data=package_data,
     data_files=all_data_files,
