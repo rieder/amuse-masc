@@ -22,142 +22,116 @@ from amuse.units.trigo import sin, cos
 from amuse.datamodel.particles import Particles
 from amuse.ic.plummer import new_plummer_sphere
 from amuse.ic.kingmodel import new_king_model
+from .stars import new_masses
+from .binaries import new_binary_distribution
 try:
     from amuse.ic.fractalcluster import new_fractal_cluster_model
 except ImportError:
     new_fractal_cluster_model = None
 
 
-def new_masses(
-    stellar_mass=False,
-    initial_mass_function="kroupa",
+def new_star_cluster(
+    stellar_mass=None,
+    initial_mass_function="salpeter",
     upper_mass_limit=125. | units.MSun,
     lower_mass_limit=0.1 | units.MSun,
     number_of_stars=1024,
-    exceed_mass=True,
-    sort_by_mass=False,
-):
-    """
-    Creates new stellar masses.
-    """
-    imf_name = initial_mass_function.lower()
-    if imf_name == "salpeter":
-        from amuse.ic.salpeter import new_salpeter_mass_distribution
-        initial_mass_function = new_salpeter_mass_distribution
-    elif imf_name == "kroupa":
-        from amuse.ic.brokenimf import new_kroupa_mass_distribution
-        initial_mass_function = new_kroupa_mass_distribution
-    elif imf_name == "flat":
-        from amuse.ic.flatimf import new_flat_mass_distribution
-        initial_mass_function = new_flat_mass_distribution
-    elif imf_name == "fixed":
-        from amuse.ic.flatimf import new_flat_mass_distribution
-
-        def new_fixed_mass_distribution(
-                number_of_particles, *list_arguments, **keyword_arguments
-        ):
-            return new_flat_mass_distribution(
-                number_of_particles,
-                mass_min=stellar_mass/number_of_stars,
-                mass_max=stellar_mass/number_of_stars,
-            )
-        initial_mass_function = new_fixed_mass_distribution
-
-    if stellar_mass:
-        # best underestimate mean_mass a bit for faster results
-        mean_mass = max(0.25 | units.MSun, lower_mass_limit)
-        mass = initial_mass_function(
-            max(1, int(stellar_mass / mean_mass)),
-            mass_min=lower_mass_limit,
-            mass_max=upper_mass_limit,
-        )
-        previous_number_of_stars = len(mass)
-        if exceed_mass:
-            # Allow one final star to exceed stellar_mass
-            final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
-            if (final_star > 1 and final_star < len(mass)):
-                mass = mass[:final_star]
-        else:
-            # Limit to stars not exceeding stellar_mass
-            mass = mass[mass.cumsum() < stellar_mass]
-
-        additional_mass = [] | units.MSun
-        while True:
-            if stellar_mass < mass.sum():
-                break
-            if previous_number_of_stars + len(additional_mass) > len(mass):
-                break
-            # We don't have enough stars yet, or at least not tested this
-            additional_mass = initial_mass_function(
-                max(1, int(stellar_mass / mean_mass)),
-                mass_min=lower_mass_limit,
-                mass_max=upper_mass_limit,
-            )
-            if exceed_mass:
-                # Allow one final star to exceed stellar_mass
-                final_star = 1+numpy.argmax(
-                    mass.sum() + additional_mass.cumsum() > stellar_mass
-                )
-                if (final_star > 1 and final_star < len(mass)):
-                    additional_mass = additional_mass[:final_star]
-                mass.append(additional_mass)
-            else:
-                # Limit to stars not exceeding stellar_mass
-                additional_mass_used = additional_mass[
-                    mass.sum() + additional_mass.cumsum() < stellar_mass
-                ]
-                mass.append(additional_mass_used)
-                if len(additional_mass_used) < len(additional_mass):
-                    break
-        number_of_stars = len(mass)
-    else:
-        # Give stars their mass
-        mass = initial_mass_function(
-            number_of_stars,
-            mass_min=lower_mass_limit,
-            mass_max=upper_mass_limit,
-        )
-
-    if sort_by_mass:
-        mass = mass.sorted()[::-1]
-        if exceed_mass:
-            final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
-            if (final_star > 1 and final_star < len(mass)):
-                mass = mass[:final_star]
-
-    return mass
-
-
-def new_star_cluster(
-        stellar_mass=False,
-        initial_mass_function="salpeter",
-        upper_mass_limit=125. | units.MSun,
-        lower_mass_limit=0.1 | units.MSun,
-        number_of_stars=1024,
-        effective_radius=3.0 | units.parsec,
-        star_distribution="plummer",
-        star_distribution_w0=7.0,
-        star_distribution_fd=2.0,
-        star_metallicity=0.01,
-        # initial_binary_fraction=0,
-        **kwargs
+    number_of_binaries=0,
+    effective_radius=3.0 | units.parsec,
+    star_distribution="plummer",
+    star_distribution_w0=7.0,
+    star_distribution_fd=2.0,
+    star_metallicity=0.01,
+    initial_binary_mass_fraction=0,
+    binary_semi_major_axis_distribution=None,
+    eccentricity_distribution=None,
+    return_binaries=False,
+    **kwargs
 ):
     """
     Create stars.
     When using an IMF, either the stellar mass is fixed (within
     stochastic error) or the number of stars is fixed. When using
     equal-mass stars, both are fixed.
+    stellar_mass takes precedence over number_of_stars!
     """
 
-    mass = new_masses(
-        stellar_mass=stellar_mass,
-        initial_mass_function=initial_mass_function,
-        upper_mass_limit=upper_mass_limit,
-        lower_mass_limit=lower_mass_limit,
-        number_of_stars=number_of_stars,
-    )
-    total_mass = mass.sum()
-    number_of_stars = len(mass)
+    # sanity checks
+    if stellar_mass is None and number_of_stars is None:
+        print("Error: must provide either stellar_mass or number_of_stars")
+        return -1
+    if stellar_mass is None:
+        if number_of_binaries < 0:
+            print("number_of_binaries must be >= 0")
+            return -1
+        if number_of_binaries > number_of_stars:
+            print("number_of_binaries must be <= number_of_stars")
+            return -1
+
+    # First, generate the masses of the systems (single stars and binary stars)
+    def generate_single_stars():
+        if stellar_mass is not None:
+            initial_single_star_mass_fraction = (
+                1
+                - initial_binary_mass_fraction
+            )
+            single_stars_mass = (
+                initial_single_star_mass_fraction * stellar_mass
+            )
+        elif number_of_stars is not None:
+            number_of_single_stars = number_of_stars - number_of_binaries
+            single_stars_mass = None
+
+        single_star_masses = new_masses(
+            stellar_mass=single_stars_mass,
+            initial_mass_function=initial_mass_function,
+            upper_mass_limit=upper_mass_limit,
+            lower_mass_limit=lower_mass_limit,
+            number_of_stars=number_of_single_stars,
+        )
+        stars = Particles(mass=single_star_masses)
+        stars.position = [0, 0, 0] | units.pc
+        stars.velocity = [0, 0, 0] | units.kms
+        return stars
+
+    def generate_binary_stars():
+        if stellar_mass is not None:
+            total_mass = initial_binary_mass_fraction * stellar_mass
+            primary_masses = None
+        else:
+            total_mass = None
+            primary_masses = new_masses(
+                number_of_stars=number_of_binaries,
+                initial_mass_function=initial_mass_function,
+                upper_mass_limit=upper_mass_limit,
+                lower_mass_limit=lower_mass_limit,
+            )
+
+        stars, binaries = new_binary_distribution(
+            primary_masses=primary_masses,
+            total_mass=total_mass,
+            initial_mass_function=initial_mass_function,
+            upper_mass_limit=upper_mass_limit,
+            lower_mass_limit=lower_mass_limit,
+            semi_major_axis_distribution=binary_semi_major_axis_distribution,
+            eccentricity_distribution=eccentricity_distribution,
+        )
+        return stars, binaries
+
+    single_stars = generate_single_stars()
+    binary_component_stars, binary_pairs = generate_binary_stars()
+    all_stars = single_stars | binary_component_stars
+    all_systems = single_stars | binary_pairs
+
+    number_of_single_stars = len(single_stars)
+    number_of_stars = len(all_stars)
+    number_of_systems = len(all_systems)
+    number_of_binaries = len(binary_pairs)
+
+    if number_of_binaries > 0:
+        total_mass = single_stars.total_mass() + binary_pairs.total_mass()
+    else:
+        total_mass = single_stars.total_mass()
 
     converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
         total_mass,
@@ -166,64 +140,80 @@ def new_star_cluster(
     )
     # Give stars a position and velocity, based on the distribution model.
     if star_distribution == "plummer":
-        stars = new_plummer_sphere(
-            number_of_stars,
+        spatial_distribution = new_plummer_sphere(
+            number_of_systems,
             convert_nbody=converter,
         )
     elif star_distribution == "king":
-        stars = new_king_model(
-            number_of_stars,
+        spatial_distribution = new_king_model(
+            number_of_systems,
             star_distribution_w0,
             convert_nbody=converter,
         )
     elif star_distribution == "fractal":
-        stars = new_fractal_cluster_model(
-            number_of_stars,
+        spatial_distribution = new_fractal_cluster_model(
+            number_of_systems,
             fractal_dimension=star_distribution_fd,
             convert_nbody=converter,
         )
     else:
         return -1, "No stellar distribution"
 
-    # set the stellar mass.
-    stars.mass = mass
+    # randomise spatial_distribution (needed for fractal distribution in
+    # particular)
+    random_indices = numpy.arange(len(spatial_distribution))
+    numpy.random.shuffle(random_indices)
+
+    # move systems (not stars!) to their positions
+    all_systems.position += spatial_distribution[random_indices].position
+    all_systems.velocity += spatial_distribution[random_indices].velocity
 
     # set other stellar parameters.
-    stars.metallicity = star_metallicity
+    all_stars.metallicity = star_metallicity
 
     # Virialize the star cluster if > 1 star
-    if len(stars) > 1:
-        stars.move_to_center()
-        stars.scale_to_standard(
+    if number_of_systems > 1:
+        all_systems.move_to_center()
+        all_systems.scale_to_standard(
             convert_nbody=converter,
             # virial_ratio=virial_ratio,
             # smoothing_length_squared= ...,
         )
+    if number_of_binaries > 0:
+        # make sure the component stars of the binary systems are also placed
+        # correctly
+        binary_component_stars[0:number_of_binaries].position += \
+            binary_pairs.position
+        binary_component_stars[number_of_binaries:].position += \
+            binary_pairs.position
+        binary_component_stars[0:number_of_binaries].velocity += \
+            binary_pairs.velocity
+        binary_component_stars[number_of_binaries:].velocity += \
+            binary_pairs.velocity
 
     # Record the cluster's initial parameters to the particle distribution
-    stars.collection_attributes.initial_mass_function = \
+    all_stars.collection_attributes.initial_mass_function = \
         initial_mass_function.lower()
-    stars.collection_attributes.upper_mass_limit = upper_mass_limit
-    stars.collection_attributes.lower_mass_limit = lower_mass_limit
-    stars.collection_attributes.number_of_stars = number_of_stars
-
-    stars.collection_attributes.effective_radius = effective_radius
-
-    stars.collection_attributes.star_distribution = star_distribution
-    stars.collection_attributes.star_distribution_w0 = star_distribution_w0
-    stars.collection_attributes.star_distribution_fd = star_distribution_fd
-
-    stars.collection_attributes.star_metallicity = star_metallicity
+    all_stars.collection_attributes.upper_mass_limit = upper_mass_limit
+    all_stars.collection_attributes.lower_mass_limit = lower_mass_limit
+    all_stars.collection_attributes.number_of_stars = number_of_stars
+    all_stars.collection_attributes.effective_radius = effective_radius
+    all_stars.collection_attributes.star_distribution = star_distribution
+    all_stars.collection_attributes.star_distribution_w0 = star_distribution_w0
+    all_stars.collection_attributes.star_distribution_fd = star_distribution_fd
+    all_stars.collection_attributes.star_metallicity = star_metallicity
 
     # Derived/legacy values
-    stars.collection_attributes.converter_mass = \
+    all_stars.collection_attributes.converter_mass = \
         converter.to_si(1 | nbody_system.mass)
-    stars.collection_attributes.converter_length =\
+    all_stars.collection_attributes.converter_length =\
         converter.to_si(1 | nbody_system.length)
-    stars.collection_attributes.converter_speed =\
+    all_stars.collection_attributes.converter_speed =\
         converter.to_si(1 | nbody_system.speed)
 
-    return stars
+    if return_binaries:
+        return single_stars, binary_component_stars, binary_pairs
+    return all_stars
 
 
 def new_stars_from_sink(
