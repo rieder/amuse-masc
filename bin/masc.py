@@ -29,108 +29,108 @@ def new_argument_parser():
     "Parse command line arguments"
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--sinks',
-        dest='sinks',
+        "--sinks",
+        dest="sinks",
         default=None,
         help="Generate stars from sink particles in this file (EXPERIMENTAL)",
     )
     parser.add_argument(
-        '-o',
-        dest='clustername',
+        "-o",
+        dest="clustername",
         default="auto",
         help="Outputfile name [auto]",
     )
     parser.add_argument(
-        '-type',
-        dest='filetype',
+        "-type",
+        dest="filetype",
         default="amuse",
         help="Output file type ([amuse]/txt/starlab/nemo)",
     )
     parser.add_argument(
-        '-N',
-        dest='number_of_stars',
+        "-N",
+        dest="number_of_stars",
         default=1024,
         type=int,
-        help='Number of stars [1024]',
+        help="Number of stars [1024]",
     )
     parser.add_argument(
-        '-M',
-        dest='cluster_mass',
+        "-M",
+        dest="cluster_mass",
         type=float,
         default=0,
-        help='Cluster mass (in MSun) (takes precedence over number of stars)',
+        help="Cluster mass (in MSun) (takes precedence over number of stars)",
     )
     parser.add_argument(
-        '-dist',
-        dest='star_distribution',
+        "-dist",
+        dest="star_distribution",
         default="plummer",
         help="Star distribution ([plummer]/king/fractal)",
     )
     parser.add_argument(
-        '-gasdist',
-        dest='gas_distribution',
+        "-gasdist",
+        dest="gas_distribution",
         default="none",
         help="Gas distribution ([none]/plummer/king/fractal) \
                 NOT IMPLEMENTED YET",
     )
     parser.add_argument(
-        '-imf',
-        dest='initial_mass_function',
+        "-imf",
+        dest="initial_mass_function",
         default="kroupa",
         help="IMF ([kroupa]/salpeter/fixed)",
     )
     parser.add_argument(
-        '-modelnr',
-        dest='cluster_model_number',
+        "-modelnr",
+        dest="cluster_model_number",
         type=int,
         default=30483,
-        help='Model number',
+        help="Model number",
     )
     parser.add_argument(
-        '-kingw',
-        dest='king_parameter_w0',
+        "-kingw",
+        dest="king_parameter_w0",
         type=float,
         default=7.0,
-        help='King W0 parameter [7.0]',
+        help="King W0 parameter [7.0]",
     )
     parser.add_argument(
-        '-fractald',
-        dest='fractal_parameter_fd',
+        "-fractald",
+        dest="fractal_parameter_fd",
         type=float,
         default=2.0,
-        help='Fractal distribution [2.0]',
+        help="Fractal distribution [2.0]",
     )
     parser.add_argument(
-        '-uml',
-        dest='upper_mass_limit',
+        "-uml",
+        dest="upper_mass_limit",
         type=float,
-        default=125.,
-        help='Upper mass limit for stars (in MSun) [125.]',
+        default=125.0,
+        help="Upper mass limit for stars (in MSun) [125.]",
     )
     parser.add_argument(
-        '-lml',
-        dest='lower_mass_limit',
+        "-lml",
+        dest="lower_mass_limit",
         type=float,
         default=0.1,
-        help='Lower mass limit for stars (in MSun) [0.1]',
+        help="Lower mass limit for stars (in MSun) [0.1]",
     )
     parser.add_argument(
-        '-Z',
-        dest='metallicity',
+        "-Z",
+        dest="metallicity",
         type=float,
         default=0.01,
-        help='Metallicity [0.01]',
+        help="Metallicity [0.01]",
     )
     parser.add_argument(
-        '-ibf',
-        dest='initial_binary_fraction',
+        "-ibf",
+        dest="initial_binary_fraction",
         type=float,
-        default=0.,
-        help='Initial binary fraction (0-1) [0.] NOT IMPLEMENTED YET',
+        default=0.0,
+        help="Initial binary fraction (0-1) [0.] NOT IMPLEMENTED YET",
     )
     parser.add_argument(
-        '-R',
-        dest='effective_radius',
+        "-R",
+        dest="effective_radius",
         type=float,
         default=3.0,
         help=(
@@ -139,8 +139,8 @@ def new_argument_parser():
         ),
     )
     parser.add_argument(
-        '--vel',
-        dest='velocity_dispersion',
+        "--vel",
+        dest="velocity_dispersion",
         type=float,
         default=1.0,
         help=(
@@ -196,9 +196,7 @@ def main():
     np.random.seed(cluster_model_number)
 
     if not (number_of_stars or cluster_mass or sinks):
-        print(
-            "no number of stars, cluster mass or origin sinks given, exiting"
-        )
+        print("no number of stars, cluster mass or origin sinks given, exiting")
         sys.exit()
 
     if sinks is not None:
@@ -218,9 +216,7 @@ def main():
                 initial_mass_function=initial_mass_function,
                 # logger=logger,
             )
-            stars.add_particles(
-                new_stars
-            )
+            stars.add_particles(new_stars)
     else:
         stars = new_star_cluster(
             stellar_mass=cluster_mass,
@@ -235,10 +231,7 @@ def main():
             star_metallicity=metallicity,
         )
 
-    print(
-        f"{len(stars)} stars generated "
-        f"({stars.total_mass().in_(units.MSun)})"
-    )
+    print(f"{len(stars)} stars generated " f"({stars.total_mass().in_(units.MSun)})")
 
     if args.clustername != "auto":
         clustertemplate = args.clustername + "%s"
@@ -246,17 +239,11 @@ def main():
     stars_file_exists = True
     sinks_file_exists = True
     filenumber = -1
-    while (stars_file_exists or sinks_file_exists):
+    while stars_file_exists or sinks_file_exists:
         filenumber += 1
-        starsfilename = (
-            clustertemplate % filenumber
-            + "-stars." + filetype
-        )
+        starsfilename = clustertemplate % filenumber + "-stars." + filetype
         stars_file_exists = os.path.isfile(starsfilename)
-        sinksfilename = (
-            clustertemplate % filenumber
-            + "-sinks." + filetype
-        )
+        sinksfilename = clustertemplate % filenumber + "-sinks." + filetype
         sinks_file_exists = os.path.isfile(sinksfilename)
 
     write_set_to_file(stars, starsfilename, filetype)

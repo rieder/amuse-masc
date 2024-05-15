@@ -24,6 +24,7 @@ from amuse.ic.plummer import new_plummer_sphere
 from amuse.ic.kingmodel import new_king_model
 from .stars import new_masses
 from .binaries import new_binary_distribution
+
 try:
     from amuse.ic.fractalcluster import new_fractal_cluster_model
 except ImportError:
@@ -33,7 +34,7 @@ except ImportError:
 def new_star_cluster(
     stellar_mass=None,
     initial_mass_function="salpeter",
-    upper_mass_limit=125. | units.MSun,
+    upper_mass_limit=125.0 | units.MSun,
     lower_mass_limit=0.1 | units.MSun,
     number_of_stars=1024,
     number_of_binaries=0,
@@ -71,13 +72,8 @@ def new_star_cluster(
     # First, generate the masses of the systems (single stars and binary stars)
     def generate_single_stars():
         if stellar_mass is not None:
-            initial_single_star_mass_fraction = (
-                1
-                - initial_binary_mass_fraction
-            )
-            single_stars_mass = (
-                initial_single_star_mass_fraction * stellar_mass
-            )
+            initial_single_star_mass_fraction = 1 - initial_binary_mass_fraction
+            single_stars_mass = initial_single_star_mass_fraction * stellar_mass
         elif number_of_stars is not None:
             number_of_single_stars = number_of_stars - number_of_binaries
             single_stars_mass = None
@@ -135,7 +131,7 @@ def new_star_cluster(
 
     converter = generic_unit_converter.ConvertBetweenGenericAndSiUnits(
         total_mass,
-        1. | units.kms,
+        1.0 | units.kms,
         effective_radius,
     )
     # Give stars a position and velocity, based on the distribution model.
@@ -182,18 +178,15 @@ def new_star_cluster(
     if number_of_binaries > 0:
         # make sure the component stars of the binary systems are also placed
         # correctly
-        binary_component_stars[0:number_of_binaries].position += \
-            binary_pairs.position
-        binary_component_stars[number_of_binaries:].position += \
-            binary_pairs.position
-        binary_component_stars[0:number_of_binaries].velocity += \
-            binary_pairs.velocity
-        binary_component_stars[number_of_binaries:].velocity += \
-            binary_pairs.velocity
+        binary_component_stars[0:number_of_binaries].position += binary_pairs.position
+        binary_component_stars[number_of_binaries:].position += binary_pairs.position
+        binary_component_stars[0:number_of_binaries].velocity += binary_pairs.velocity
+        binary_component_stars[number_of_binaries:].velocity += binary_pairs.velocity
 
     # Record the cluster's initial parameters to the particle distribution
-    all_stars.collection_attributes.initial_mass_function = \
+    all_stars.collection_attributes.initial_mass_function = (
         initial_mass_function.lower()
+    )
     all_stars.collection_attributes.upper_mass_limit = upper_mass_limit
     all_stars.collection_attributes.lower_mass_limit = lower_mass_limit
     all_stars.collection_attributes.number_of_stars = number_of_stars
@@ -204,12 +197,15 @@ def new_star_cluster(
     all_stars.collection_attributes.star_metallicity = star_metallicity
 
     # Derived/legacy values
-    all_stars.collection_attributes.converter_mass = \
-        converter.to_si(1 | nbody_system.mass)
-    all_stars.collection_attributes.converter_length =\
-        converter.to_si(1 | nbody_system.length)
-    all_stars.collection_attributes.converter_speed =\
-        converter.to_si(1 | nbody_system.speed)
+    all_stars.collection_attributes.converter_mass = converter.to_si(
+        1 | nbody_system.mass
+    )
+    all_stars.collection_attributes.converter_length = converter.to_si(
+        1 | nbody_system.length
+    )
+    all_stars.collection_attributes.converter_speed = converter.to_si(
+        1 | nbody_system.speed
+    )
 
     if return_binaries:
         return single_stars, binary_component_stars, binary_pairs
@@ -217,16 +213,16 @@ def new_star_cluster(
 
 
 def new_stars_from_sink(
-        origin,
-        upper_mass_limit=125 | units.MSun,
-        lower_mass_limit=0.1 | units.MSun,
-        default_radius=0.25 | units.pc,
-        velocity_dispersion=1 | units.kms,
-        logger=None,
-        initial_mass_function="kroupa",
-        distribution="random",
-        randomseed=None,
-        **keyword_arguments
+    origin,
+    upper_mass_limit=125 | units.MSun,
+    lower_mass_limit=0.1 | units.MSun,
+    default_radius=0.25 | units.pc,
+    velocity_dispersion=1 | units.kms,
+    logger=None,
+    initial_mass_function="kroupa",
+    distribution="random",
+    randomseed=None,
+    **keyword_arguments
 ):
     """
     Form stars from an origin particle that keeps track of the properties of
@@ -242,10 +238,7 @@ def new_stars_from_sink(
     except AttributeError:
         initialised = False
     if not initialised:
-        logger.debug(
-            "Initialising origin particle %i for star formation",
-            origin.key
-        )
+        logger.debug("Initialising origin particle %i for star formation", origin.key)
         next_mass = new_star_cluster(
             initial_mass_function=initial_mass_function,
             upper_mass_limit=upper_mass_limit,
@@ -258,8 +251,7 @@ def new_stars_from_sink(
 
     if origin.mass < origin.next_primary_mass:
         logger.debug(
-            "Not enough in star forming region %i to form the next star",
-            origin.key
+            "Not enough in star forming region %i to form the next star", origin.key
         )
         return Particles()
 
@@ -285,13 +277,8 @@ def new_stars_from_sink(
     except AttributeError:
         radius = default_radius
     rho = numpy.random.random(number_of_stars) * radius
-    theta = (
-        numpy.random.random(number_of_stars)
-        * (2 * numpy.pi | units.rad)
-    )
-    phi = (
-        numpy.random.random(number_of_stars) * numpy.pi | units.rad
-    )
+    theta = numpy.random.random(number_of_stars) * (2 * numpy.pi | units.rad)
+    phi = numpy.random.random(number_of_stars) * numpy.pi | units.rad
     x = rho * sin(phi) * cos(theta)
     y = rho * sin(phi) * sin(theta)
     z = rho * cos(phi)
@@ -299,18 +286,15 @@ def new_stars_from_sink(
     new_stars.y += y
     new_stars.z += z
 
-    velocity_magnitude = numpy.random.normal(
-        scale=velocity_dispersion.value_in(units.kms),
-        size=number_of_stars,
-    ) | units.kms
-    velocity_theta = (
-        numpy.random.random(number_of_stars)
-        * (2 * numpy.pi | units.rad)
+    velocity_magnitude = (
+        numpy.random.normal(
+            scale=velocity_dispersion.value_in(units.kms),
+            size=number_of_stars,
+        )
+        | units.kms
     )
-    velocity_phi = (
-        numpy.random.random(number_of_stars)
-        * (numpy.pi | units.rad)
-    )
+    velocity_theta = numpy.random.random(number_of_stars) * (2 * numpy.pi | units.rad)
+    velocity_phi = numpy.random.random(number_of_stars) * (numpy.pi | units.rad)
     vx = velocity_magnitude * sin(velocity_phi) * cos(velocity_theta)
     vy = velocity_magnitude * sin(velocity_phi) * sin(velocity_theta)
     vz = velocity_magnitude * cos(velocity_phi)

@@ -15,7 +15,7 @@ from amuse.ic.flatimf import new_flat_mass_distribution
 def new_masses(
     stellar_mass=False,
     initial_mass_function="kroupa",
-    upper_mass_limit=125. | units.MSun,
+    upper_mass_limit=125.0 | units.MSun,
     lower_mass_limit=0.1 | units.MSun,
     number_of_stars=None,
     exceed_mass=True,
@@ -38,9 +38,10 @@ def new_masses(
         ):
             return new_flat_mass_distribution(
                 number_of_particles,
-                mass_min=stellar_mass/number_of_stars,
-                mass_max=stellar_mass/number_of_stars,
+                mass_min=stellar_mass / number_of_stars,
+                mass_max=stellar_mass / number_of_stars,
             )
+
         initial_mass_function = new_fixed_mass_distribution
 
     if stellar_mass:
@@ -54,8 +55,8 @@ def new_masses(
         previous_number_of_stars = len(mass)
         if exceed_mass:
             # Allow one final star to exceed stellar_mass
-            final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
-            if (final_star > 1 and final_star < len(mass)):
+            final_star = 1 + numpy.argmax(mass.cumsum() > stellar_mass)
+            if final_star > 1 and final_star < len(mass):
                 mass = mass[:final_star]
         else:
             # Limit to stars not exceeding stellar_mass
@@ -75,10 +76,10 @@ def new_masses(
             )
             if exceed_mass:
                 # Allow one final star to exceed stellar_mass
-                final_star = 1+numpy.argmax(
+                final_star = 1 + numpy.argmax(
                     mass.sum() + additional_mass.cumsum() > stellar_mass
                 )
-                if (final_star > 1 and final_star < len(mass)):
+                if final_star > 1 and final_star < len(mass):
                     additional_mass = additional_mass[:final_star]
                 mass.append(additional_mass)
             else:
@@ -101,8 +102,8 @@ def new_masses(
     if sort_by_mass:
         mass = mass.sorted()[::-1]
         if exceed_mass:
-            final_star = 1+numpy.argmax(mass.cumsum() > stellar_mass)
-            if (final_star > 1 and final_star < len(mass)):
+            final_star = 1 + numpy.argmax(mass.cumsum() > stellar_mass)
+            if final_star > 1 and final_star < len(mass):
                 mass = mass[:final_star]
 
     return mass
