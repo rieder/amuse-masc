@@ -49,7 +49,7 @@ def new_star_cluster(
     **kwargs
 ):
     """
-    Create stars.
+    Takes properties for a star cluster and returns the stars.
     When using an IMF, either the stellar mass is fixed (within
     stochastic error) or the number of stars is fixed. When using
     equal-mass stars, both are fixed.
